@@ -68,15 +68,17 @@
                 <input type="text" id="nomClient" required>
             </div>
 
-            <!-- Bûches Glacées + Parts -->
+            <!-- Bûches Glacées (Parfums spécifiques + Parts) -->
             <div class="sub-group">
-                <label>❄️ Bûches Glacées :</label>
+                <label>❄️ Bûche Glacée :</label>
                 <select id="bucheGlacee" style="margin-bottom:8px;">
                     <option value="">-- Aucun --</option>
                     <option value="Glacée - Marron">Marron</option>
                     <option value="Glacée - Vanille">Vanille</option>
                     <option value="Glacée - Chocolat">Chocolat</option>
                     <option value="Glacée - Mangue">Mangue</option>
+                    <option value="Glacée - Passion">Passion</option>
+                    <option value="Glacée - Framboise">Framboise</option>
                 </select>
                 <select id="partsGlacee">
                     <option value="4 parts">4 parts</option>
@@ -85,15 +87,14 @@
                 </select>
             </div>
 
-            <!-- Bûches Tradition + Parts -->
+            <!-- Bûches Traditionnelles (Parfums spécifiques + Parts) -->
             <div class="sub-group">
-                <label>🧈 Bûches Traditionnelles au Beurre :</label>
+                <label>🧈 Bûche Traditionnelle au Beurre :</label>
                 <select id="bucheBeurre" style="margin-bottom:8px;">
                     <option value="">-- Aucun --</option>
                     <option value="Tradition - Marron">Marron</option>
-                    <option value="Tradition - Vanille">Vanille</option>
                     <option value="Tradition - Chocolat">Chocolat</option>
-                    <option value="Tradition - Mangue">Mangue</option>
+                    <option value="Tradition - Café">Café</option>
                 </select>
                 <select id="partsBeurre">
                     <option value="4 parts">4 parts</option>
@@ -102,15 +103,13 @@
                 </select>
             </div>
 
-            <!-- Omelettes Norvégiennes + Parts -->
+            <!-- Omelettes Norvégiennes (Parfums spécifiques + Parts) -->
             <div class="sub-group">
-                <label>🔥 Omelettes Norvégiennes :</label>
+                <label>🔥 Omelette Norvégienne :</label>
                 <select id="bucheOmelette" style="margin-bottom:8px;">
                     <option value="">-- Aucun --</option>
-                    <option value="Omelette - Marron">Marron</option>
                     <option value="Omelette - Vanille">Vanille</option>
-                    <option value="Omelette - Chocolat">Chocolat</option>
-                    <option value="Omelette - Mangue">Mangue</option>
+                    <option value="Omelette - Rhum Raisin">Rhum Raisin</option>
                 </select>
                 <select id="partsOmelette">
                     <option value="4 parts">4 parts</option>
@@ -143,11 +142,11 @@
         <div class="labo-box"><h3>📋 Commandes par magasin</h3><div id="recap-par-magasin"></div></div>
     </div>
 
-    <!-- Espace Gestion -->
+    <!-- Espace Gestion (Réapprovisionnement) -->
     <div id="gestion-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour au menu</button>
         <h2>⚙️ Réapprovisionnement des Stocks</h2>
-        <p>Ajoutez du stock en gros pour un magasin, un parfum et un format précis :</p>
+        <p>Ajoutez du stock en gros pour un magasin et un produit précis :</p>
         
         <form id="stockForm" onsubmit="ajouterStockEnGros(event)">
             <div class="form-group">
@@ -161,7 +160,7 @@
 
             <div class="form-group">
                 <label>Catégorie :</label>
-                <select id="gestionCategorie" required>
+                <select id="gestionCategorie" required onchange="mettreAJourParfumsGestion()">
                     <option value="Glacée">Bûche Glacée</option>
                     <option value="Tradition">Tradition au Beurre</option>
                     <option value="Omelette">Omelette Norvégienne</option>
@@ -171,10 +170,7 @@
             <div class="form-group">
                 <label>Parfum :</label>
                 <select id="gestionParfum" required>
-                    <option value="Marron">Marron</option>
-                    <option value="Vanille">Vanille</option>
-                    <option value="Chocolat">Chocolat</option>
-                    <option value="Mangue">Mangue</option>
+                    <!-- Rempli dynamiquement par JavaScript -->
                 </select>
             </div>
 
@@ -201,6 +197,33 @@
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec";
     let magasinActif = "";
 
+    // Listes des parfums par catégorie pour le formulaire de gestion
+    const parfumsParCategorie = {
+        "Glacée": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
+        "Tradition": ["Marron", "Chocolat", "Café"],
+        "Omelette": ["Vanille", "Rhum Raisin"]
+    };
+
+    function mettreAJourParfumsGestion() {
+        const catSelect = document.getElementById('gestionCategorie').value;
+        const parfumSelect = document.getElementById('gestionParfum');
+        parfumSelect.innerHTML = "";
+        
+        if (parfumsParCategorie[catSelect]) {
+            parfumsParCategorie[catSelect].forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                parfumSelect.appendChild(opt);
+            });
+        }
+    }
+
+    // Initialiser les parfums de gestion au chargement
+    window.onload = function() {
+        mettreAJourParfumsGestion();
+    };
+
     function ouvrirEspace(nom) {
         document.getElementById('home-screen').style.display = 'none';
         if (nom === 'Labo') {
@@ -216,7 +239,7 @@
 
     function ouvrirGestion() {
         let code = prompt("Veuillez entrer le code de sécurité :");
-        if (code === "1234") {
+        if (code === "2014") { // Code PIN mis à jour ici
             document.getElementById('home-screen').style.display = 'none';
             document.getElementById('gestion-screen').style.display = 'block';
         } else if (code !== null) {
@@ -251,6 +274,7 @@
         .then(() => { 
             alert(`Succès ! +${qte} ajoutés pour ${produitFinal} à ${mag}.`); 
             document.getElementById('stockForm').reset(); 
+            mettreAJourParfumsGestion();
         })
         .catch(error => {
             console.error("Erreur:", error);
