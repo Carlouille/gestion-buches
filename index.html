@@ -39,6 +39,7 @@
 <div class="container">
     <h1>🎄 Gestion des Bûches de Noël</h1>
 
+    <!-- Écran d'accueil -->
     <div id="home-screen">
         <h2>Choisissez votre espace</h2>
         <div class="menu-grid">
@@ -136,8 +137,24 @@
     <!-- Espace Gestion (Protégé par code PIN) -->
     <div id="gestion-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour au menu</button>
-        <h2>⚙️ Espace Gestion des Stocks</h2>
-        <p>Ici, votre père pourra ajouter des stocks (en cours de configuration avec Google Sheets).</p>
+        <h2>⚙️ Gestion du Catalogue et des Produits</h2>
+        <p>Ajouter un nouveau parfum ou type de bûche :</p>
+        
+        <form id="catalogueForm" onsubmit="ajouterProduit(event)">
+            <div class="form-group">
+                <label>Catégorie :</label>
+                <select id="gestCategorie">
+                    <option value="Glacée">Bûche Glacée</option>
+                    <option value="Tradition">Tradition au Beurre</option>
+                    <option value="Omelette">Omelette Norvégienne</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nom du parfum / produit :</label>
+                <input type="text" id="gestParfum" placeholder="ex: Fraise Tagada" required>
+            </div>
+            <button type="submit" style="background:#0275d8;">Ajouter au catalogue</button>
+        </form>
     </div>
 </div>
 
@@ -171,6 +188,14 @@
     function retourAccueil() {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('home-screen').style.display = 'block';
+    }
+
+    function ajouterProduit(e) {
+        e.preventDefault();
+        const cat = document.getElementById('gestCategorie').value;
+        const parfum = document.getElementById('gestParfum').value;
+        alert(`Le produit "${cat} - ${parfum}" a bien été pris en compte pour la configuration !`);
+        document.getElementById('catalogueForm').reset();
     }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
