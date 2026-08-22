@@ -32,6 +32,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
         th { background: #f2f2f2; }
+        .sub-group { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -67,10 +68,51 @@
                 <input type="text" id="nomClient" required>
             </div>
 
-            <div class="form-group">
-                <label>Nombre de parts :</label>
-                <select id="nbParts" required>
-                    <option value="">-- Choisir le format --</option>
+            <!-- Bûches Glacées + Parts -->
+            <div class="sub-group">
+                <label>❄️ Bûches Glacées :</label>
+                <select id="bucheGlacee" style="margin-bottom:8px;">
+                    <option value="">-- Aucun --</option>
+                    <option value="Glacée - Marron">Marron</option>
+                    <option value="Glacée - Vanille">Vanille</option>
+                    <option value="Glacée - Chocolat">Chocolat</option>
+                    <option value="Glacée - Mangue">Mangue</option>
+                </select>
+                <select id="partsGlacee">
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
+                </select>
+            </div>
+
+            <!-- Bûches Tradition + Parts -->
+            <div class="sub-group">
+                <label>🧈 Bûches Traditionnelles au Beurre :</label>
+                <select id="bucheBeurre" style="margin-bottom:8px;">
+                    <option value="">-- Aucun --</option>
+                    <option value="Tradition - Marron">Marron</option>
+                    <option value="Tradition - Vanille">Vanille</option>
+                    <option value="Tradition - Chocolat">Chocolat</option>
+                    <option value="Tradition - Mangue">Mangue</option>
+                </select>
+                <select id="partsBeurre">
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
+                </select>
+            </div>
+
+            <!-- Omelettes Norvégiennes + Parts -->
+            <div class="sub-group">
+                <label>🔥 Omelettes Norvégiennes :</label>
+                <select id="bucheOmelette" style="margin-bottom:8px;">
+                    <option value="">-- Aucun --</option>
+                    <option value="Omelette - Marron">Marron</option>
+                    <option value="Omelette - Vanille">Vanille</option>
+                    <option value="Omelette - Chocolat">Chocolat</option>
+                    <option value="Omelette - Mangue">Mangue</option>
+                </select>
+                <select id="partsOmelette">
                     <option value="4 parts">4 parts</option>
                     <option value="6 parts">6 parts</option>
                     <option value="8 parts">8 parts</option>
@@ -78,40 +120,7 @@
             </div>
 
             <div class="form-group">
-                <label>❄️ Bûches Glacées :</label>
-                <select id="bucheGlacee">
-                    <option value="">-- Aucun --</option>
-                    <option value="Glacée - Marron">Marron</option>
-                    <option value="Glacée - Vanille">Vanille</option>
-                    <option value="Glacée - Chocolat">Chocolat</option>
-                    <option value="Glacée - Mangue">Mangue</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>🧈 Bûches Traditionnelles au Beurre :</label>
-                <select id="bucheBeurre">
-                    <option value="">-- Aucun --</option>
-                    <option value="Tradition - Marron">Marron</option>
-                    <option value="Tradition - Vanille">Vanille</option>
-                    <option value="Tradition - Chocolat">Chocolat</option>
-                    <option value="Tradition - Mangue">Mangue</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>🔥 Omelettes Norvégiennes :</label>
-                <select id="bucheOmelette">
-                    <option value="">-- Aucun --</option>
-                    <option value="Omelette - Marron">Marron</option>
-                    <option value="Omelette - Vanille">Vanille</option>
-                    <option value="Omelette - Chocolat">Chocolat</option>
-                    <option value="Omelette - Mangue">Mangue</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Quantité :</label>
+                <label>Quantité globale pour cette ligne :</label>
                 <input type="number" id="quantite" value="1" min="1" required>
             </div>
 
@@ -134,11 +143,11 @@
         <div class="labo-box"><h3>📋 Commandes par magasin</h3><div id="recap-par-magasin"></div></div>
     </div>
 
-    <!-- Espace Gestion (Protégé par code PIN) -->
+    <!-- Espace Gestion -->
     <div id="gestion-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour au menu</button>
         <h2>⚙️ Réapprovisionnement des Stocks</h2>
-        <p>Ajoutez du stock en grande quantité pour un magasin spécifique :</p>
+        <p>Ajoutez du stock en gros pour un magasin, un parfum et un format précis :</p>
         
         <form id="stockForm" onsubmit="ajouterStockEnGros(event)">
             <div class="form-group">
@@ -151,27 +160,30 @@
             </div>
 
             <div class="form-group">
-                <label>Type de Bûche (Catégorie & Parfum) :</label>
-                <select id="gestionProduit" required>
-                    <option value="">-- Choisir le produit --</option>
-                    <optgroup label="Bûches Glacées">
-                        <option value="Glacée - Marron">Glacée - Marron</option>
-                        <option value="Glacée - Vanille">Glacée - Vanille</option>
-                        <option value="Glacée - Chocolat">Glacée - Chocolat</option>
-                        <option value="Glacée - Mangue">Glacée - Mangue</option>
-                    </optgroup>
-                    <optgroup label="Tradition au Beurre">
-                        <option value="Tradition - Marron">Tradition - Marron</option>
-                        <option value="Tradition - Vanille">Tradition - Vanille</option>
-                        <option value="Tradition - Chocolat">Tradition - Chocolat</option>
-                        <option value="Tradition - Mangue">Tradition - Mangue</option>
-                    </optgroup>
-                    <optgroup label="Omelettes Norvégiennes">
-                        <option value="Omelette - Marron">Omelette - Marron</option>
-                        <option value="Omelette - Vanille">Omelette - Vanille</option>
-                        <option value="Omelette - Chocolat">Omelette - Chocolat</option>
-                        <option value="Omelette - Mangue">Omelette - Mangue</option>
-                    </optgroup>
+                <label>Catégorie :</label>
+                <select id="gestionCategorie" required>
+                    <option value="Glacée">Bûche Glacée</option>
+                    <option value="Tradition">Tradition au Beurre</option>
+                    <option value="Omelette">Omelette Norvégienne</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Parfum :</label>
+                <select id="gestionParfum" required>
+                    <option value="Marron">Marron</option>
+                    <option value="Vanille">Vanille</option>
+                    <option value="Chocolat">Chocolat</option>
+                    <option value="Mangue">Mangue</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Nombre de parts :</label>
+                <select id="gestionParts" required>
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
                 </select>
             </div>
 
@@ -220,21 +232,24 @@
     function ajouterStockEnGros(e) {
         e.preventDefault();
         const mag = document.getElementById('gestionMagasin').value;
-        const prod = document.getElementById('gestionProduit').value;
+        const cat = document.getElementById('gestionCategorie').value;
+        const parfum = document.getElementById('gestionParfum').value;
+        const parts = document.getElementById('gestionParts').value;
         const qte = parseInt(document.getElementById('gestionQuantite').value);
 
-        // Envoi vers Google Sheets (similaire à une commande, mais avec une quantité ajoutée ou un type spécifique si besoin)
+        const produitFinal = `${cat} - ${parfum} (${parts})`;
+
         const data = {
             magasin: mag,
             nomClient: "[RÉAPPROVISIONNEMENT]",
-            typeBuche: prod + " (Stock initial)",
+            typeBuche: produitFinal,
             quantite: qte,
             dateRetrait: new Date().toISOString().split('T')[0]
         };
 
         fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
         .then(() => { 
-            alert(`Succès ! +${qte} ajoutés pour ${prod} à ${mag}.`); 
+            alert(`Succès ! +${qte} ajoutés pour ${produitFinal} à ${mag}.`); 
             document.getElementById('stockForm').reset(); 
         })
         .catch(error => {
@@ -247,21 +262,25 @@
         e.preventDefault();
 
         const g = document.getElementById('bucheGlacee').value;
+        const pG = document.getElementById('partsGlacee').value;
+
         const b = document.getElementById('bucheBeurre').value;
+        const pB = document.getElementById('partsBeurre').value;
+
         const o = document.getElementById('bucheOmelette').value;
-        const parts = document.getElementById('nbParts').value;
+        const pO = document.getElementById('partsOmelette').value;
 
-        let selectionChoisie = [];
-        if (g) selectionChoisie.push(g);
-        if (b) selectionChoisie.push(b);
-        if (o) selectionChoisie.push(o);
+        let selections = [];
+        if (g) selections.push(`${g} (${pG})`);
+        if (b) selections.push(`${b} (${pB})`);
+        if (o) selections.push(`${o} (${pO})`);
 
-        if (selectionChoisie.length === 0) {
-            alert("Veuillez sélectionner au moins une bûche dans l'un des menus déroulants !");
+        if (selections.length === 0) {
+            alert("Veuillez sélectionner au moins une bûche !");
             return;
         }
 
-        const typeBucheFinal = selectionChoisie.join(" + ") + " (" + parts + ")";
+        const typeBucheFinal = selections.join(" + ");
 
         const data = {
             magasin: document.getElementById('magasinCible').value,
@@ -309,7 +328,8 @@
                 }
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
 
-                let commandes = res.commandes.sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
+                let commandes = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]")
+                                             .sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
                 let htmlCommandes = "";
                 
@@ -330,7 +350,7 @@
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
         })
-        .catch(error => console.error("Erreur de chargement des données:", error));
+        .catch(error => console.error("Erreur de chargement:", error));
     }
 </script>
 </body>
