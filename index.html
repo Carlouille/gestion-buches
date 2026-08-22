@@ -28,8 +28,6 @@
         .menu-labo h3 { color: #856404; }
 
         .view { display: none; }
-        .stock-box { background: #e8f4fd; border: 1px solid #b6e0fe; padding: 15px; border-radius: 4px; margin-top: 20px; }
-        .labo-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 4px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
         th { background: #f2f2f2; }
@@ -53,7 +51,7 @@
     <h1>🎄 Gestion des Bûches de Noël</h1>
 
     <!-- Écran d'accueil principal -->
-    <div id="home-screen">
+    <div id="home-screen" class="view" style="display: block;">
         <h2>Choisissez votre espace</h2>
         <div class="menu-grid">
             <div class="menu-card" onclick="choisirMagasin('Toulon')"><h3>📍 Toulon</h3></div>
@@ -394,7 +392,6 @@
         });
     });
 
-    // Génération du tableau unifié (Parfum en ligne, Parts en colonnes par catégorie)
     function genererTableauStock(stocksObj) {
         let categories = {
             "❄️ Bûches Glacées": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
@@ -414,7 +411,6 @@
             parfums.forEach(parfum => {
                 let prefixe = catNom.includes("Glacée") ? "Glacée" : (catNom.includes("Traditionnelles") ? "Tradition" : "Omelette");
                 html += `<tr><td>${parfum}</td>`;
-                partsList.partsList = partsList || ["4 parts", "6 parts", "8 parts"];
                 partsList.forEach(part => {
                     let cle = `${prefixe} - ${parfum} (${part})`;
                     let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
@@ -431,13 +427,11 @@
         fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(res => {
-            // Affichage Stock Magasin
             if (document.getElementById('magasin-stock-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif];
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
-            // Affichage Stock Labo
             if (document.getElementById('labo-stock-screen').style.display === 'block') {
                 let stocksRestants = res.stocksRestants;
                 let htmlStock = "";
@@ -449,7 +443,6 @@
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
             }
 
-            // Affichage Commandes Labo
             if (document.getElementById('labo-orders-screen').style.display === 'block') {
                 let commandes = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]")
                                              .sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
