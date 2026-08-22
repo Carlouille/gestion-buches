@@ -16,8 +16,7 @@
         input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { background: #5cb85c; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; }
         button:hover { background: #4cae4c; }
-        .back-btn { background: #6c757d; margin-bottom: 20px; width: auto; padding: 8px 15px; }
-        .back-btn:hover { background: #5a6268; }
+        .back-btn { background: #6c757d; margin-bottom: 20px; width: auto; padding: 8px 15px; color: white; text-decoration: none; display: inline-block; border-radius: 4px; cursor: pointer;}
         
         #home-screen { display: block; text-align: center; padding: 20px; }
         .menu-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
@@ -35,7 +34,8 @@
         .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
         .item-row span { flex: 2; font-size: 14px; }
         .item-row select { flex: 1.5; padding: 6px; }
-        .item-row input { flex: 1; padding: 6px; }
+        .item-row input { flex: 0.8; padding: 6px; }
+        .item-row .stock-indicator { flex: 1; font-size: 12px; color: #d9534f; font-weight: bold; }
         .stock-table th { background: #0275d8; color: white; }
         .stock-table td { text-align: center; }
         .stock-table td:first-child { text-align: left; font-weight: bold; }
@@ -46,7 +46,6 @@
         .action-card h3 { color: #0275d8; margin-top: 0; }
         .labo-action-card { background: #fffdf5; border: 2px solid #ffc107; }
         .labo-action-card h3 { color: #856404; }
-        .labo-action-card:hover { background: #fff8e1; }
     </style>
 </head>
 <body>
@@ -135,25 +134,9 @@
                 <input type="text" id="nomClient" required>
             </div>
 
-            <p style="font-size: 13px; color: #666; font-style: italic;">Laissez la quantité à 0 ou vide pour les parfums non souhaités.</p>
+            <p style="font-size: 13px; color: #666; font-style: italic;">Le stock disponible s'affiche en direct. La quantité est limitée au stock restant.</p>
 
-            <!-- Bûches Glacées -->
-            <div class="sub-group">
-                <label>❄️ Bûches Glacées :</label>
-                <div id="liste-glacees"></div>
-            </div>
-
-            <!-- Bûches Traditionnelles -->
-            <div class="sub-group">
-                <label>🧈 Bûches Traditionnelles au Beurre :</label>
-                <div id="liste-tradition"></div>
-            </div>
-
-            <!-- Omelettes Norvégiennes -->
-            <div class="sub-group">
-                <label>🔥 Omelettes Norvégiennes :</label>
-                <div id="liste-omelettes"></div>
-            </div>
+            <div id="form-items-container"></div>
 
             <div class="form-group">
                 <label>Date de retrait :</label>
@@ -249,50 +232,67 @@
     };
 
     function initialiserChampsCommande() {
-        // Glacées
-        let htmlG = "";
-        parfumsParCategorie["Glacée"].forEach(p => {
-            htmlG += `<div class="item-row">
-                <span><b>${p}</b></span>
-                <select id="parts_Glacée_${p}">
-                    <option value="4 parts">4 parts</option>
-                    <option value="6 parts">6 parts</option>
-                    <option value="8 parts">8 parts</option>
-                </select>
-                <input type="number" id="qte_Glacée_${p}" value="0" min="0" placeholder="Qté">
-            </div>`;
-        });
-        document.getElementById('liste-glacees').innerHTML = htmlG;
+        let container = document.getElementById('form-items-container');
+        container.innerHTML = "";
+        
+        for (let [cat, parfums] of Object.entries(parfumsParCategorie)) {
+            let sub = document.createElement('div');
+            sub.className = "sub-group";
+            sub.innerHTML = `<label>${cat === 'Glacée' ? '❄️ Bûches Glacées' : (cat === 'Tradition' ? '🧈 Bûches Traditionnelles au Beurre' : '🔥 Omelettes Norvégiennes')}</label>`;
+            
+            parfums.forEach(p => {
+                let div = document.createElement('div');
+                div.className = "item-row";
+                div.innerHTML = `
+                    <span><b>${p}</b></span>
+                    <select id="parts_${cat}_${p}" onchange="mettreAJourStockLigne('${cat}', '${p}')">
+                        <option value="4 parts">4 parts</option>
+                        <option value="6 parts">6 parts</option>
+                        <option value="8 parts">8 parts</option>
+                    </select>
+                    <input type="number" id="qte_${cat}_${p}" value="0" min="0" max="0" placeholder="Qté">
+                    <span class="stock-indicator" id="stock_${cat}_${p}">(Dispo: ?)</span>
+                `;
+                sub.appendChild(div);
+            });
+            container.appendChild(sub);
+        }
+    }
 
-        // Tradition
-        let htmlT = "";
-        parfumsParCategorie["Tradition"].forEach(p => {
-            htmlT += `<div class="item-row">
-                <span><b>${p}</b></span>
-                <select id="parts_Tradition_${p}">
-                    <option value="4 parts">4 parts</option>
-                    <option value="6 parts">6 parts</option>
-                    <option value="8 parts">8 parts</option>
-                </select>
-                <input type="number" id="qte_Tradition_${p}" value="0" min="0" placeholder="Qté">
-            </div>`;
-        });
-        document.getElementById('liste-tradition').innerHTML = htmlT;
+    let dernierStockRecupere = {};
 
-        // Omelette
-        let htmlO = "";
-        parfumsParCategorie["Omelette"].forEach(p => {
-            htmlO += `<div class="item-row">
-                <span><b>${p}</b></span>
-                <select id="parts_Omelette_${p}">
-                    <option value="4 parts">4 parts</option>
-                    <option value="6 parts">6 parts</option>
-                    <option value="8 parts">8 parts</option>
-                </select>
-                <input type="number" id="qte_Omelette_${p}" value="0" min="0" placeholder="Qté">
-            </div>`;
-        });
-        document.getElementById('liste-omelettes').innerHTML = htmlO;
+    async function rafraichirStocksFormulaire() {
+        try {
+            const res = await fetch(WEB_APP_URL).then(r => r.json());
+            dernierStockRecupere = res.stocksRestants[magasinActif] || {};
+            
+            Object.entries(parfumsParCategorie).forEach(([cat, parfums]) => {
+                parfums.forEach(p => {
+                    mettreAJourStockLigne(cat, p);
+                });
+            });
+        } catch (e) {
+            console.error("Erreur chargement stocks form:", e);
+        }
+    }
+
+    function mettreAJourStockLigne(cat, parfum) {
+        let selectParts = document.getElementById(`parts_${cat}_${parfum}`);
+        let inputQte = document.getElementById(`qte_${cat}_${parfum}`);
+        let indicator = document.getElementById(`stock_${cat}_${parfum}`);
+
+        if (!selectParts || !inputQte || !indicator) return;
+
+        let partVal = selectParts.value;
+        let cle = `${cat} - ${parfum} (${partVal})`;
+        let qteDispo = dernierStockRecupere[cle] !== undefined ? dernierStockRecupere[cle] : 0;
+
+        indicator.innerText = `(Dispo: ${qteDispo})`;
+        inputQte.setAttribute("max", qteDispo);
+        
+        if (parseInt(inputQte.value) > qteDispo) {
+            inputQte.value = qteDispo;
+        }
     }
 
     function mettreAJourParfumsGestion() {
@@ -312,7 +312,6 @@
 
     window.onload = function() {
         mettreAJourParfumsGestion();
-        initialiserChampsCommande();
         let aujourdhui = new Date().toISOString().split('T')[0];
         document.getElementById('filtreDateMagasin').value = aujourdhui;
         document.getElementById('filtreDateLabo').value = aujourdhui;
@@ -337,6 +336,8 @@
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('magasin-order-screen').style.display = 'block';
         document.getElementById('titre-commande-magasin').innerText = "📝 Passer une commande - " + magasinActif;
+        initialiserChampsCommande();
+        rafraichirStocksFormulaire();
     }
 
     function ouvrirCommandesJourMagasin() {
@@ -419,18 +420,19 @@
         let selections = [];
         let qteTotaleGlobale = 0;
 
-        let categoriesMap = {
-            "Glacée": parfumsParCategorie["Glacée"],
-            "Tradition": parfumsParCategorie["Tradition"],
-            "Omelette": parfumsParCategorie["Omelette"]
-        };
-
-        for (let [cat, parfums] of Object.entries(categoriesMap)) {
+        for (let [cat, parfums] of Object.entries(parfumsParCategorie)) {
             parfums.forEach(p => {
                 let qteInput = document.getElementById(`qte_${cat}_${p}`);
                 let partsSelect = document.getElementById(`parts_${cat}_${p}`);
                 if (qteInput && partsSelect) {
                     let qte = parseInt(qteInput.value) || 0;
+                    let maxQte = parseInt(qteInput.getAttribute('max')) || 0;
+                    
+                    if (qte > maxQte) {
+                        alert(`Attention, la quantité demandée pour ${cat} - ${p} (${partsSelect.value}) dépasse le stock disponible (${maxQte}) !`);
+                        return;
+                    }
+
                     if (qte > 0) {
                         selections.push(`${qte}x ${cat} - ${p} (${partsSelect.value})`);
                         qteTotaleGlobale += qte;
@@ -458,7 +460,6 @@
         .then(() => { 
             alert("Commande enregistrée avec succès !"); 
             document.getElementById('orderForm').reset(); 
-            initialiserChampsCommande();
             choisirMagasin(magasinActif); 
         })
         .catch(error => {
@@ -488,7 +489,7 @@
                 html += `<tr><td>${parfum}</td>`;
                 partsList.forEach(part => {
                     let cle = `${prefixe} - ${parfum} (${part})`;
-                    let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
+                    let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 0;
                     html += `<td><b>${qte}</b></td>`;
                 });
                 html += `</tr>`;
@@ -506,7 +507,7 @@
 
             // 1. Affichage Stock Magasin
             if (document.getElementById('magasin-stock-screen').style.display === 'block') {
-                let stocks = res.stocksRestants[magasinActif];
+                let stocks = res.stocksRestants[magasinActif] || {};
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
@@ -530,7 +531,7 @@
 
             // 3. Affichage Stock Labo
             if (document.getElementById('labo-stock-screen').style.display === 'block') {
-                let stocksRestants = res.stocksRestants;
+                let stocksRestants = res.stocksRestants || {};
                 let htmlStock = "";
                 for (let magasin in stocksRestants) {
                     htmlStock += `<h3>📍 Boutique : ${magasin}</h3>`;
@@ -562,7 +563,7 @@
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
 
-            // 5. Affichage Expéditions Jour par Jour Labo
+            // 5. Expéditions Labo
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
                 let dateVouue = document.getElementById('filtreDateLabo').value;
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
