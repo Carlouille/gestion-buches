@@ -222,7 +222,7 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec";
+    const WEB_APP_URL = "VOTRE_WEB_APP_URL_ICI"; // Remplacez par votre URL Web App Google Apps Script
     let magasinActif = "";
     let dernierStockRecupere = {};
 
@@ -294,7 +294,7 @@
 
         let partVal = selectParts.value;
         let cle = `${cat} - ${parfum} (${partVal})`;
-        let qteDispo = dernierStockRecupere[cle] !== undefined ? dernierStockRecupere[cle] : 0;
+        let qteDispo = dernierStockRecupere[cle] !== undefined ? dernierStockRecupere[cle] : 20;
 
         indicator.innerText = `(Dispo: ${qteDispo})`;
         inputQte.setAttribute("max", qteDispo);
@@ -435,13 +435,6 @@
                 let partsSelect = document.getElementById(`parts_${cat}_${p}`);
                 if (qteInput && partsSelect) {
                     let qte = parseInt(qteInput.value) || 0;
-                    let maxQte = parseInt(qteInput.getAttribute('max')) || 0;
-                    
-                    if (qte > maxQte) {
-                        alert(`Attention, la quantité demandée pour ${cat} - ${p} (${partsSelect.value}) dépasse le stock disponible (${maxQte}) !`);
-                        return;
-                    }
-
                     if (qte > 0) {
                         selections.push(`${qte}x ${cat} - ${p} (${partsSelect.value})`);
                         qteTotaleGlobale += qte;
@@ -498,7 +491,7 @@
                 html += `<tr><td>${parfum}</td>`;
                 partsList.forEach(part => {
                     let cle = `${prefixe} - ${parfum} (${part})`;
-                    let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 0;
+                    let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
                     html += `<td><b>${qte}</b></td>`;
                 });
                 html += `</tr>`;
@@ -520,10 +513,13 @@
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
-            // 2. Affichage Commandes du Jour Magasin
+            // 2. Affichage Commandes du Jour Magasin (Filtre date sécurisé avec substring)
             if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
                 let dateVouue = document.getElementById('filtreDateMagasin').value;
-                let cmdMag = commandesFiltrees.filter(c => c.magasin === magasinActif && c.dateRetrait && c.dateRetrait.startsWith(dateVouue));
+                let cmdMag = commandesFiltrees.filter(c => {
+                    if (c.magasin !== magasinActif || !c.dateRetrait) return false;
+                    return String(c.dateRetrait).substring(0, 10) === dateVouue;
+                });
                 
                 let html = `<h3>Retraits prévus le : ${dateVouue ? new Date(dateVouue).toLocaleDateString('fr-FR') : 'Toutes'}</h3>`;
                 if (cmdMag.length === 0) {
@@ -572,14 +568,18 @@
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
 
-            // 5. Expéditions Labo
+            // 5. Expéditions Labo (Filtre date sécurisé avec substring)
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
                 let dateVouue = document.getElementById('filtreDateLabo').value;
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
                 let htmlExp = `<h3>Expéditions prévues le : ${dateVouue ? new Date(dateVouue).toLocaleDateString('fr-FR') : ''}</h3>`;
 
                 magasins.forEach(m => {
-                    let cmdMag = commandesFiltrees.filter(c => c.magasin === m && c.dateRetrait && c.dateRetrait.startsWith(dateVouue));
+                    let cmdMag = commandesFiltrees.filter(c => {
+                        if (c.magasin !== m || !c.dateRetrait) return false;
+                        return String(c.dateRetrait).substring(0, 10) === dateVouue;
+                    });
+                    
                     htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
                     if (cmdMag.length === 0) {
                         htmlExp += "<p>Aucune expédition prévue pour ce magasin à cette date.</p>";
