@@ -57,20 +57,68 @@
             <option value="Carqueiranne">Carqueiranne</option>
             <option value="Hyères">Hyères</option>
         </select>
+        
         <form id="orderForm">
-            <div class="form-group"><label>Nom du client :</label><input type="text" id="nomClient" required></div>
-            <div class="form-group"><label>Type de bûche :</label>
-                <select id="typeBuche" required>
-                    <option value="">-- Choisir --</option>
-                    <option value="Marron Tradition">Marron Tradition</option>
-                    <option value="Glacée">Glacée</option>
-                    <option value="Omelette Norvégienne">Omelette Norvégienne</option>
+            <div class="form-group">
+                <label>Nom du client :</label>
+                <input type="text" id="nomClient" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nombre de parts :</label>
+                <select id="nbParts" required>
+                    <option value="">-- Choisir le format --</option>
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
                 </select>
             </div>
-            <div class="form-group"><label>Quantité :</label><input type="number" id="quantite" value="1" min="1" required></div>
-            <div class="form-group"><label>Date de retrait :</label><input type="date" id="dateRetrait" required></div>
+
+            <!-- Déroulant 1 : Glacées -->
+            <div class="form-group">
+                <label>❄️ Bûches Glacées (laisser vide si non concerné) :</label>
+                <select id="bucheGlacee">
+                    <option value="">-- Aucun --</option>
+                    <option value="Glacée - Vanille Chocolat">Vanille Chocolat</option>
+                    <option value="Glacée - Framboise Passion">Framboise Passion</option>
+                    <option value="Glacée - Marron Glacé">Marron Glacé</option>
+                </select>
+            </div>
+
+            <!-- Déroulant 2 : Traditionnelles au beurre -->
+            <div class="form-group">
+                <label>🧈 Bûches Traditionnelles au Beurre (laisser vide si non concerné) :</label>
+                <select id="bucheBeurre">
+                    <option value="">-- Aucun --</option>
+                    <option value="Tradition - Chocolat Praliné">Chocolat Praliné</option>
+                    <option value="Tradition - Café Moka">Café Moka</option>
+                    <option value="Tradition - Marron Tradition">Marron Tradition</option>
+                </select>
+            </div>
+
+            <!-- Déroulant 3 : Omelettes Norvégiennes -->
+            <div class="form-group">
+                <label>🔥 Omelettes Norvégiennes (laisser vide si non concerné) :</label>
+                <select id="bucheOmelette">
+                    <option value="">-- Aucun --</option>
+                    <option value="Omelette - Grand Marnier">Grand Marnier</option>
+                    <option value="Omelette - Framboise Vanille">Framboise Vanille</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Quantité :</label>
+                <input type="number" id="quantite" value="1" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label>Date de retrait :</label>
+                <input type="date" id="dateRetrait" required>
+            </div>
+
             <button type="submit">Valider la commande</button>
         </form>
+
         <div class="stock-box"><h3>📊 Stock en direct</h3><div id="stock-magasin-content"></div></div>
     </div>
 
@@ -107,45 +155,69 @@
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // Récupération des choix dans les 3 menus déroulants de bûches
+        const g = document.getElementById('bucheGlacee').value;
+        const b = document.getElementById('bucheBeurre').value;
+        const o = document.getElementById('bucheOmelette').value;
+        const parts = document.getElementById('nbParts').value;
+
+        // On combine les sélections (si l'utilisateur en a choisi plusieurs ou une seule)
+        let selectionChoisie = [];
+        if (g) selectionChoisie.push(g);
+        if (b) selectionChoisie.push(b);
+        if (o) selectionChoisie.push(o);
+
+        if (selectionChoisie.length === 0) {
+            alert("Veuillez sélectionner au moins un type de bûche dans l'un des menus déroulants !");
+            return;
+        }
+
+        // On fusionne avec le nombre de parts pour que ce soit clair dans le tableau
+        const typeBucheFinal = selectionChoisie.join(" + ") + " (" + parts + ")";
+
         const data = {
             magasin: document.getElementById('magasinCible').value,
             nomClient: document.getElementById('nomClient').value,
-            typeBuche: document.getElementById('typeBuche').value,
+            typeBuche: typeBucheFinal,
             quantite: parseInt(document.getElementById('quantite').value),
             dateRetrait: document.getElementById('dateRetrait').value
         };
+
         fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
-        .then(() => { alert("Commande enregistrée !"); document.getElementById('orderForm').reset(); chargerDonnees(); });
+        .then(() => { 
+            alert("Commande enregistrée !"); 
+            document.getElementById('orderForm').reset(); 
+            chargerDonnees(); 
+        });
     });
 
     function chargerDonnees() {
         fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(res => {
-            // 1. Affichage pour l'espace Magasin
             if (document.getElementById('magasin-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif];
                 let html = "<ul>";
-                for (const [b, q] of Object.entries(stocks)) html += `<li>${b} : <b>${q} restantes</b></li>`;
+                for (const [buche, q] of Object.entries(stocks)) {
+                    html += `<li>${buche} : <b>${q} restantes</b></li>`;
+                }
                 document.getElementById('stock-magasin-content').innerHTML = html + "</ul>";
             }
 
-            // 2. Affichage pour l'espace Laboratoire (Détail des stocks par magasin + Commandes)
             if (document.getElementById('labo-screen').style.display === 'block') {
                 let stocksRestants = res.stocksRestants;
                 let htmlStock = "";
                 
-                // Boucle pour afficher le stock de chaque magasin séparément
                 for (let magasin in stocksRestants) {
                     htmlStock += `<h4>📍 Boutique : ${magasin}</h4><ul>`;
-                    for (const [b, q] of Object.entries(stocksRestants[magasin])) {
-                        htmlStock += `<li>${b} : <b>${q} restantes</b></li>`;
+                    for (const [buche, q] of Object.entries(stocksRestants[magasin])) {
+                        htmlStock += `<li>${buche} : <b>${q} restantes</b></li>`;
                     }
                     htmlStock += `</ul>`;
                 }
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
 
-                // Affichage des commandes triées et séparées par magasin
                 let commandes = res.commandes.sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
                 let htmlCommandes = "";
@@ -156,7 +228,7 @@
                     if (cmd.length === 0) {
                         htmlCommandes += "<p>Aucune commande.</p>";
                     } else {
-                        htmlCommandes += "<table><tr><th>Date</th><th>Client</th><th>Bûche</th><th>Qté</th></tr>";
+                        htmlCommandes += "<table><tr><th>Date</th><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
                         cmd.forEach(row => {
                             let datePropre = row.dateRetrait ? new Date(row.dateRetrait).toLocaleDateString('fr-FR') : "N/A";
                             htmlCommandes += `<tr><td><b>${datePropre}</b></td><td>${row.nomClient}</td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
