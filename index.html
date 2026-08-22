@@ -79,9 +79,10 @@
                 <label>❄️ Bûches Glacées (laisser vide si non concerné) :</label>
                 <select id="bucheGlacee">
                     <option value="">-- Aucun --</option>
-                    <option value="Glacée - Vanille Chocolat">Vanille Chocolat</option>
-                    <option value="Glacée - Framboise Passion">Framboise Passion</option>
-                    <option value="Glacée - Marron Glacé">Marron Glacé</option>
+                    <option value="Glacée - Marron">Marron</option>
+                    <option value="Glacée - Vanille">Vanille</option>
+                    <option value="Glacée - Chocolat">Chocolat</option>
+                    <option value="Glacée - Mangue Passion">Mangue Passion</option>
                 </select>
             </div>
 
@@ -90,9 +91,10 @@
                 <label>🧈 Bûches Traditionnelles au Beurre (laisser vide si non concerné) :</label>
                 <select id="bucheBeurre">
                     <option value="">-- Aucun --</option>
-                    <option value="Tradition - Chocolat Praliné">Chocolat Praliné</option>
-                    <option value="Tradition - Café Moka">Café Moka</option>
-                    <option value="Tradition - Marron Tradition">Marron Tradition</option>
+                    <option value="Tradition - Marron">Marron</option>
+                    <option value="Tradition - Vanille">Vanille</option>
+                    <option value="Tradition - Chocolat">Chocolat</option>
+                    <option value="Tradition - Mangue Passion">Mangue Passion</option>
                 </select>
             </div>
 
@@ -101,8 +103,10 @@
                 <label>🔥 Omelettes Norvégiennes (laisser vide si non concerné) :</label>
                 <select id="bucheOmelette">
                     <option value="">-- Aucun --</option>
-                    <option value="Omelette - Grand Marnier">Grand Marnier</option>
-                    <option value="Omelette - Framboise Vanille">Framboise Vanille</option>
+                    <option value="Omelette - Marron">Marron</option>
+                    <option value="Omelette - Vanille">Vanille</option>
+                    <option value="Omelette - Chocolat">Chocolat</option>
+                    <option value="Omelette - Mangue Passion">Mangue Passion</option>
                 </select>
             </div>
 
@@ -156,24 +160,21 @@
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Récupération des choix dans les 3 menus déroulants de bûches
         const g = document.getElementById('bucheGlacee').value;
         const b = document.getElementById('bucheBeurre').value;
         const o = document.getElementById('bucheOmelette').value;
         const parts = document.getElementById('nbParts').value;
 
-        // On combine les sélections (si l'utilisateur en a choisi plusieurs ou une seule)
         let selectionChoisie = [];
         if (g) selectionChoisie.push(g);
         if (b) selectionChoisie.push(b);
         if (o) selectionChoisie.push(o);
 
         if (selectionChoisie.length === 0) {
-            alert("Veuillez sélectionner au moins un type de bûche dans l'un des menus déroulants !");
+            alert("Veuillez sélectionner au moins une bûche dans l'un des menus déroulants !");
             return;
         }
 
-        // On fusionne avec le nombre de parts pour que ce soit clair dans le tableau
         const typeBucheFinal = selectionChoisie.join(" + ") + " (" + parts + ")";
 
         const data = {
