@@ -9,7 +9,8 @@
         .container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1 { color: #d9534f; text-align: center; }
         h2 { color: #0275d8; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        h4 { margin-bottom: 5px; color: #333; }
+        h3 { color: #856404; margin-top: 25px; }
+        h4 { margin-bottom: 5px; color: #333; margin-top: 25px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
@@ -34,8 +35,15 @@
         th { background: #f2f2f2; }
         .sub-group { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 10px; }
         .stock-table th { background: #0275d8; color: white; }
-        .stock-table td { text-align: center; }
-        .stock-table td:first-child { text-align: left; font-weight: bold; }
+        .stock-table td:last-child { text-align: center; font-weight: bold; }
+        
+        .menu-double { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+        .action-card { background: #f0f8ff; border: 2px solid #0275d8; padding: 30px; border-radius: 8px; width: 250px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .action-card:hover { background: #e0f0ff; transform: translateY(-3px); }
+        .action-card h3 { color: #0275d8; margin-top: 0; }
+        .labo-action-card { background: #fffdf5; border: 2px solid #ffc107; }
+        .labo-action-card h3 { color: #856404; }
+        .labo-action-card:hover { background: #fff8e1; }
     </style>
 </head>
 <body>
@@ -43,27 +51,61 @@
 <div class="container">
     <h1>🎄 Gestion des Bûches de Noël</h1>
 
-    <!-- Écran d'accueil -->
+    <!-- Écran d'accueil principal -->
     <div id="home-screen">
         <h2>Choisissez votre espace</h2>
         <div class="menu-grid">
-            <div class="menu-card" onclick="ouvrirEspace('Toulon')"><h3>📍 Toulon</h3></div>
-            <div class="menu-card" onclick="ouvrirEspace('Carqueiranne')"><h3>📍 Carqueiranne</h3></div>
-            <div class="menu-card" onclick="ouvrirEspace('Hyères')"><h3>📍 Hyères</h3></div>
-            <div class="menu-card menu-labo" onclick="ouvrirEspace('Labo')"><h3>🏭 Laboratoire</h3></div>
+            <div class="menu-card" onclick="choisirMagasin('Toulon')"><h3>📍 Toulon</h3></div>
+            <div class="menu-card" onclick="choisirMagasin('Carqueiranne')"><h3>📍 Carqueiranne</h3></div>
+            <div class="menu-card" onclick="choisirMagasin('Hyères')"><h3>📍 Hyères</h3></div>
+            <div class="menu-card menu-labo" onclick="choisirLaboMenu()"><h3>🏭 Laboratoire</h3></div>
             <div class="menu-card menu-labo" onclick="ouvrirGestion()"><h3>⚙️ Gestion Stocks</h3></div>
         </div>
     </div>
 
-    <!-- Espace Magasin -->
-    <div id="magasin-screen" class="view">
-        <button class="back-btn" onclick="retourAccueil()">⬅ Changer d'espace</button>
-        <h2 id="titre-magasin">Espace Magasin</h2>
-        <select id="magasinCible" style="display:none;">
-            <option value="Toulon">Toulon</option>
-            <option value="Carqueiranne">Carqueiranne</option>
-            <option value="Hyères">Hyères</option>
-        </select>
+    <!-- Écran Choix Actions Magasin -->
+    <div id="magasin-menu-screen" class="view">
+        <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
+        <h2 id="titre-choix-magasin">Boutique</h2>
+        <div class="menu-double">
+            <div class="action-card" onclick="ouvrirStockMagasin()">
+                <h3>📊 Voir le Stock</h3>
+                <p>Consulter les stocks en direct par parts et parfums</p>
+            </div>
+            <div class="action-card" onclick="ouvrirCommandeMagasin()">
+                <h3>📝 Passer une Commande</h3>
+                <p>Enregistrer une commande client</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran Choix Actions Laboratoire -->
+    <div id="labo-menu-screen" class="view">
+        <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
+        <h2>🏭 Espace Laboratoire</h2>
+        <div class="menu-double">
+            <div class="action-card labo-action-card" onclick="ouvrirStockLabo()">
+                <h3>📊 Voir les Stocks</h3>
+                <p>Consulter les stocks de chaque magasin</p>
+            </div>
+            <div class="action-card labo-action-card" onclick="ouvrirCommandesLabo()">
+                <h3>📋 Voir les Commandes</h3>
+                <p>Consulter les commandes enregistrées par boutique</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Espace Visualisation Stock Magasin -->
+    <div id="magasin-stock-screen" class="view">
+        <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
+        <h2 id="titre-stock-magasin">📊 Stock en direct</h2>
+        <div id="stock-magasin-content"></div>
+    </div>
+
+    <!-- Espace Passer une Commande Magasin -->
+    <div id="magasin-order-screen" class="view">
+        <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
+        <h2 id="titre-commande-magasin">📝 Passer une commande</h2>
         
         <form id="orderForm">
             <div class="form-group">
@@ -133,21 +175,25 @@
 
             <button type="submit">Valider la commande</button>
         </form>
-
-        <div class="stock-box"><h3>📊 Stock en direct</h3><div id="stock-magasin-content"></div></div>
     </div>
 
-    <!-- Espace Laboratoire -->
-    <div id="labo-screen" class="view">
-        <button class="back-btn" onclick="retourAccueil()">⬅ Retour au menu</button>
-        <h2>🏭 Espace Laboratoire</h2>
-        <div class="stock-box"><h3>📊 Stocks détaillés par magasin</h3><div id="stock-global-content"></div></div>
-        <div class="labo-box"><h3>📋 Commandes par magasin</h3><div id="recap-par-magasin"></div></div>
+    <!-- Espace Visualisation Stock Laboratoire -->
+    <div id="labo-stock-screen" class="view">
+        <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
+        <h2>📊 Stocks détaillés par magasin</h2>
+        <div id="stock-global-content"></div>
+    </div>
+
+    <!-- Espace Visualisation Commandes Laboratoire -->
+    <div id="labo-orders-screen" class="view">
+        <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
+        <h2>📋 Commandes par magasin</h2>
+        <div id="recap-par-magasin"></div>
     </div>
 
     <!-- Espace Gestion -->
     <div id="gestion-screen" class="view">
-        <button class="back-btn" onclick="retourAccueil()">⬅ Retour au menu</button>
+        <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2>⚙️ Réapprovisionnement des Stocks</h2>
         <p>Ajoutez du stock en gros pour un magasin et un produit précis :</p>
         
@@ -223,23 +269,47 @@
         mettreAJourParfumsGestion();
     };
 
-    function ouvrirEspace(nom) {
-        document.getElementById('home-screen').style.display = 'none';
-        if (nom === 'Labo') {
-            document.getElementById('labo-screen').style.display = 'block';
-        } else {
-            magasinActif = nom;
-            document.getElementById('magasin-screen').style.display = 'block';
-            document.getElementById('titre-magasin').innerText = "📍 Boutique : " + nom;
-            document.getElementById('magasinCible').value = nom;
-        }
+    function choisirMagasin(nom) {
+        magasinActif = nom;
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('magasin-menu-screen').style.display = 'block';
+        document.getElementById('titre-choix-magasin').innerText = "📍 Boutique : " + nom;
+    }
+
+    function ouvrirStockMagasin() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('magasin-stock-screen').style.display = 'block';
+        document.getElementById('titre-stock-magasin').innerText = "📊 Stock en direct - " + magasinActif;
+        chargerDonnees();
+    }
+
+    function ouvrirCommandeMagasin() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('magasin-order-screen').style.display = 'block';
+        document.getElementById('titre-commande-magasin').innerText = "📝 Passer une commande - " + magasinActif;
+    }
+
+    function choisirLaboMenu() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('labo-menu-screen').style.display = 'block';
+    }
+
+    function ouvrirStockLabo() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('labo-stock-screen').style.display = 'block';
+        chargerDonnees();
+    }
+
+    function ouvrirCommandesLabo() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('labo-orders-screen').style.display = 'block';
         chargerDonnees();
     }
 
     function ouvrirGestion() {
         let code = prompt("Veuillez entrer le code de sécurité :");
         if (code === "2014") {
-            document.getElementById('home-screen').style.display = 'none';
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
             document.getElementById('gestion-screen').style.display = 'block';
         } else if (code !== null) {
             alert("Code incorrect !");
@@ -304,7 +374,7 @@
         const typeBucheFinal = selections.join(" + ");
 
         const data = {
-            magasin: document.getElementById('magasinCible').value,
+            magasin: magasinActif,
             nomClient: document.getElementById('nomClient').value,
             typeBuche: typeBucheFinal,
             quantite: parseInt(document.getElementById('quantite').value),
@@ -315,7 +385,7 @@
         .then(() => { 
             alert("Commande enregistrée avec succès !"); 
             document.getElementById('orderForm').reset(); 
-            chargerDonnees(); 
+            choisirMagasin(magasinActif); 
         })
         .catch(error => {
             console.error("Erreur:", error);
@@ -323,35 +393,33 @@
         });
     });
 
-    // Fonction pour générer un beau tableau HTML de stock trié par parts
-    function genererTableauStock(stocksObj) {
-        let categories = {
-            "❄️ Bûches Glacées": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
-            "🧈 Bûches Traditionnelles au Beurre": ["Marron", "Chocolat", "Café"],
-            "🔥 Omelettes Norvégiennes": ["Vanille", "Rhum Raisin"]
-        };
-
-        let html = "";
+    function genererTableauxParParts(stocksObj) {
         let partsList = ["4 parts", "6 parts", "8 parts"];
+        let html = "";
 
-        for (let [catNom, parfums] of Object.entries(categories)) {
-            html += `<h4>${catNom}</h4>`;
-            html += `<table class="stock-table"><tr><th>Parfum</th>`;
-            partsList.forEach(p => html += `<th>${p}</th>`);
-            html += `</tr>`;
+        partsList.forEach(part => {
+            html += `<h4>🍰 Bûches de ${part}</h4>`;
+            html += `<table class="stock-table"><tr><th>Catégorie</th><th>Parfum</th><th>Quantité restante</th></tr>`;
 
-            parfums.forEach(parfum => {
-                let prefixe = catNom.includes("Glacée") ? "Glacée" : (catNom.includes("Traditionnelle") ? "Tradition" : "Omelette");
-                html += `<tr><td>${parfum}</td>`;
-                partsList.forEach(part => {
-                    let cle = `${prefixe} - ${parfum} (${part})`;
+            let elements = [
+                { cat: "Glacée", parfums: ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"] },
+                { cat: "Tradition", parfums: ["Marron", "Chocolat", "Café"] },
+                { cat: "Omelette", parfums: ["Vanille", "Rhum Raisin"] }
+            ];
+
+            elements.forEach(item => {
+                item.parfums.forEach(parfum => {
+                    let cle = `${item.cat} - ${parfum} (${part})`;
                     let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
-                    html += `<td><b>${qte}</b></td>`;
+                    let nomCatAffichage = item.cat === "Glacée" ? "❄️ Glacée" : (item.cat === "Tradition" ? "🧈 Traditionnelle" : "🔥 Omelette Norvégienne");
+                    
+                    html += `<tr><td>${nomCatAffichage}</td><td>${parfum}</td><td>${qte}</td></tr>`;
                 });
-                html += `</tr>`;
             });
+
             html += `</table>`;
-        }
+        });
+
         return html;
     }
 
@@ -360,22 +428,25 @@
         .then(res => res.json())
         .then(res => {
             // Affichage Stock Magasin
-            if (document.getElementById('magasin-screen').style.display === 'block') {
+            if (document.getElementById('magasin-stock-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif];
-                document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
+                document.getElementById('stock-magasin-content').innerHTML = genererTableauxParParts(stocks);
             }
 
-            // Affichage Stock & Commandes Labo
-            if (document.getElementById('labo-screen').style.display === 'block') {
+            // Affichage Stock Labo
+            if (document.getElementById('labo-stock-screen').style.display === 'block') {
                 let stocksRestants = res.stocksRestants;
                 let htmlStock = "";
                 
                 for (let magasin in stocksRestants) {
-                    htmlStock += `<h4>📍 Boutique : ${magasin}</h4>`;
-                    htmlStock += genererTableauStock(stocksRestants[magasin]);
+                    htmlStock += `<h3>📍 Boutique : ${magasin}</h3>`;
+                    htmlStock += genererTableauxParParts(stocksRestants[magasin]);
                 }
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
+            }
 
+            // Affichage Commandes Labo
+            if (document.getElementById('labo-orders-screen').style.display === 'block') {
                 let commandes = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]")
                                              .sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
