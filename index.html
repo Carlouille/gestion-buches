@@ -109,7 +109,7 @@
     <div id="magasin-stock-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-stock-magasin">📊 Stock en direct</h2>
-        <div id="stock-magasin-content"></div>
+        <div id="stock-magasin-content">Chargement des stocks...</div>
     </div>
 
     <!-- Espace Commandes du Jour Magasin -->
@@ -120,7 +120,7 @@
             <label>Sélectionner la date de retrait :</label>
             <input type="date" id="filtreDateMagasin" onchange="chargerDonnees()">
         </div>
-        <div id="commandes-jour-magasin-content"></div>
+        <div id="commandes-jour-magasin-content">Chargement...</div>
     </div>
 
     <!-- Espace Passer une Commande Magasin -->
@@ -134,7 +134,7 @@
                 <input type="text" id="nomClient" required>
             </div>
 
-            <p style="font-size: 13px; color: #666; font-style: italic;">Le stock disponible s'affiche en direct. La quantité est limitée au stock restant.</p>
+            <p style="font-size: 13px; color: #666; font-style: italic;" id="info-stock-statut">Chargement des stocks en direct...</p>
 
             <div id="form-items-container"></div>
 
@@ -143,7 +143,7 @@
                 <input type="date" id="dateRetrait" required>
             </div>
 
-            <button type="submit">Valider la commande</button>
+            <button type="submit" id="btn-valider-commande" disabled>Valider la commande</button>
         </form>
     </div>
 
@@ -151,14 +151,14 @@
     <div id="labo-stock-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📊 Stocks détaillés par magasin</h2>
-        <div id="stock-global-content"></div>
+        <div id="stock-global-content">Chargement...</div>
     </div>
 
     <!-- Espace Visualisation Commandes Laboratoire -->
     <div id="labo-orders-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📋 Commandes par magasin</h2>
-        <div id="recap-par-magasin"></div>
+        <div id="recap-par-magasin">Chargement...</div>
     </div>
 
     <!-- Espace Expéditions Jour par Jour Labo -->
@@ -169,7 +169,7 @@
             <label>Sélectionner la date d'expédition / retrait :</label>
             <input type="date" id="filtreDateLabo" onchange="chargerDonnees()">
         </div>
-        <div id="expeditions-labo-content"></div>
+        <div id="expeditions-labo-content">Chargement...</div>
     </div>
 
     <!-- Espace Gestion -->
@@ -224,6 +224,7 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec";
     let magasinActif = "";
+    let dernierStockRecupere = {};
 
     const parfumsParCategorie = {
         "Glacée": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
@@ -251,7 +252,7 @@
                         <option value="8 parts">8 parts</option>
                     </select>
                     <input type="number" id="qte_${cat}_${p}" value="0" min="0" max="0" placeholder="Qté">
-                    <span class="stock-indicator" id="stock_${cat}_${p}">(Dispo: ?)</span>
+                    <span class="stock-indicator" id="stock_${cat}_${p}">(Dispo: 0)</span>
                 `;
                 sub.appendChild(div);
             });
@@ -259,9 +260,13 @@
         }
     }
 
-    let dernierStockRecupere = {};
-
     async function rafraichirStocksFormulaire() {
+        let infoStatut = document.getElementById('info-stock-statut');
+        let btnValider = document.getElementById('btn-valider-commande');
+        
+        if (infoStatut) infoStatut.innerText = "Chargement des stocks en direct...";
+        if (btnValider) btnValider.disabled = true;
+
         try {
             const res = await fetch(WEB_APP_URL).then(r => r.json());
             dernierStockRecupere = res.stocksRestants[magasinActif] || {};
@@ -271,8 +276,12 @@
                     mettreAJourStockLigne(cat, p);
                 });
             });
+
+            if (infoStatut) infoStatut.innerText = "Le stock disponible s'affiche en direct. La quantité est limitée au stock restant.";
+            if (btnValider) btnValider.disabled = false;
         } catch (e) {
             console.error("Erreur chargement stocks form:", e);
+            if (infoStatut) infoStatut.innerText = "Erreur de chargement des stocks. Veuillez réitérer.";
         }
     }
 
