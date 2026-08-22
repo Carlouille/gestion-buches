@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Bûches de Noël - Réseau Artisanal</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #d9534f; text-align: center; }
+        h2 { color: #0275d8; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        h4 { margin-bottom: 5px; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #5cb85c; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #4cae4c; }
+        .back-btn { background: #6c757d; margin-bottom: 20px; width: auto; padding: 8px 15px; }
+        .back-btn:hover { background: #5a6268; }
+        
+        #home-screen { text-align: center; padding: 20px; }
+        .menu-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+        .menu-card { background: #e8f4fd; border: 2px solid #b6e0fe; padding: 20px; border-radius: 8px; width: 200px; cursor: pointer; transition: 0.2s; }
+        .menu-card:hover { background: #d0e8fc; transform: translateY(-3px); }
+        .menu-card h3 { color: #0275d8; margin-top: 0; }
+        .menu-labo { background: #fff3cd; border-color: #ffeeba; }
+        .menu-labo h3 { color: #856404; }
+
+        .view { display: none; }
+        .stock-box { background: #e8f4fd; border: 1px solid #b6e0fe; padding: 15px; border-radius: 4px; margin-top: 20px; }
+        .labo-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 4px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎄 Gestion des Bûches de Noël</h1>
+
+    <div id="home-screen">
+        <h2>Choisissez votre espace</h2>
+        <div class="menu-grid">
+            <div class="menu-card" onclick="ouvrirEspace('Toulon')"><h3>📍 Toulon</h3></div>
+            <div class="menu-card" onclick="ouvrirEspace('Carqueiranne')"><h3>📍 Carqueiranne</h3></div>
+            <div class="menu-card" onclick="ouvrirEspace('Hyères')"><h3>📍 Hyères</h3></div>
+            <div class="menu-card menu-labo" onclick="ouvrirEspace('Labo')"><h3>🏭 Laboratoire</h3></div>
+        </div>
+    </div>
+
+    <div id="magasin-screen" class="view">
+        <button class="back-btn" onclick="retourAccueil()">⬅ Changer d'espace</button>
+        <h2 id="titre-magasin">Espace Magasin</h2>
+        <select id="magasinCible" style="display:none;">
+            <option value="Toulon">Toulon</option>
+            <option value="Carqueiranne">Carqueiranne</option>
+            <option value="Hyères">Hyères</option>
+        </select>
+        <form id="orderForm">
+            <div class="form-group"><label>Nom du client :</label><input type="text" id="nomClient" required></div>
+            <div class="form-group"><label>Type de bûche :</label>
+                <select id="typeBuche" required>
+                    <option value="">-- Choisir --</option>
+                    <option value="Marron Tradition">Marron Tradition</option>
+                    <option value="Glacée">Glacée</option>
+                    <option value="Omelette Norvégienne">Omelette Norvégienne</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Quantité :</label><input type="number" id="quantite" value="1" min="1" required></div>
+            <div class="form-group"><label>Date de retrait :</label><input type="date" id="dateRetrait" required></div>
+            <button type="submit">Valider la commande</button>
+        </form>
+        <div class="stock-box"><h3>📊 Stock en direct</h3><div id="stock-magasin-content"></div></div>
+    </div>
+
+    <div id="labo-screen" class="view">
+        <button class="back-btn" onclick="retourAccueil()">⬅ Retour au menu</button>
+        <h2>🏭 Espace Laboratoire</h2>
+        <div class="stock-box"><h3>📊 Stocks détaillés par magasin</h3><div id="stock-global-content"></div></div>
+        <div class="labo-box"><h3>📋 Commandes par magasin</h3><div id="recap-par-magasin"></div></div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec";
+    let magasinActif = "";
+
+    function ouvrirEspace(nom) {
+        document.getElementById('home-screen').style.display = 'none';
+        if (nom === 'Labo') {
+            document.getElementById('labo-screen').style.display = 'block';
+        } else {
+            magasinActif = nom;
+            document.getElementById('magasin-screen').style.display = 'block';
+            document.getElementById('titre-magasin').innerText = "📍 Boutique : " + nom;
+            document.getElementById('magasinCible').value = nom;
+        }
+        chargerDonnees();
+    }
+
+    function retourAccueil() {
+        document.getElementById('home-screen').style.display = 'block';
+        document.getElementById('magasin-screen').style.display = 'none';
+        document.getElementById('labo-screen').style.display = 'none';
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            magasin: document.getElementById('magasinCible').value,
+            nomClient: document.getElementById('nomClient').value,
+            typeBuche: document.getElementById('typeBuche').value,
+            quantite: parseInt(document.getElementById('quantite').value),
+            dateRetrait: document.getElementById('dateRetrait').value
+        };
+        fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
+        .then(() => { alert("Commande enregistrée !"); document.getElementById('orderForm').reset(); chargerDonnees(); });
+    });
+
+    function chargerDonnees() {
+        fetch(WEB_APP_URL)
+        .then(res => res.json())
+        .then(res => {
+            // 1. Affichage pour l'espace Magasin
+            if (document.getElementById('magasin-screen').style.display === 'block') {
+                let stocks = res.stocksRestants[magasinActif];
+                let html = "<ul>";
+                for (const [b, q] of Object.entries(stocks)) html += `<li>${b} : <b>${q} restantes</b></li>`;
+                document.getElementById('stock-magasin-content').innerHTML = html + "</ul>";
+            }
+
+            // 2. Affichage pour l'espace Laboratoire (Détail des stocks par magasin + Commandes)
+            if (document.getElementById('labo-screen').style.display === 'block') {
+                let stocksRestants = res.stocksRestants;
+                let htmlStock = "";
+                
+                // Boucle pour afficher le stock de chaque magasin séparément
+                for (let magasin in stocksRestants) {
+                    htmlStock += `<h4>📍 Boutique : ${magasin}</h4><ul>`;
+                    for (const [b, q] of Object.entries(stocksRestants[magasin])) {
+                        htmlStock += `<li>${b} : <b>${q} restantes</b></li>`;
+                    }
+                    htmlStock += `</ul>`;
+                }
+                document.getElementById('stock-global-content').innerHTML = htmlStock;
+
+                // Affichage des commandes triées et séparées par magasin
+                let commandes = res.commandes.sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
+                let magasins = ["Toulon", "Carqueiranne", "Hyères"];
+                let htmlCommandes = "";
+                
+                magasins.forEach(m => {
+                    htmlCommandes += `<h4>📍 Boutique : ${m}</h4>`;
+                    let cmd = commandes.filter(c => c.magasin === m);
+                    if (cmd.length === 0) {
+                        htmlCommandes += "<p>Aucune commande.</p>";
+                    } else {
+                        htmlCommandes += "<table><tr><th>Date</th><th>Client</th><th>Bûche</th><th>Qté</th></tr>";
+                        cmd.forEach(row => {
+                            let datePropre = row.dateRetrait ? new Date(row.dateRetrait).toLocaleDateString('fr-FR') : "N/A";
+                            htmlCommandes += `<tr><td><b>${datePropre}</b></td><td>${row.nomClient}</td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
+                        });
+                        htmlCommandes += "</table>";
+                    }
+                });
+                document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
+            }
+        });
+    }
+</script>
+</body>
+</html>
