@@ -10,7 +10,7 @@
         h1 { color: #d9534f; text-align: center; }
         h2 { color: #0275d8; border-bottom: 2px solid #eee; padding-bottom: 5px; }
         h3 { color: #856404; margin-top: 25px; }
-        h4 { margin-bottom: 5px; color: #333; margin-top: 25px; }
+        h4 { margin-bottom: 5px; color: #333; margin-top: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
@@ -35,7 +35,8 @@
         th { background: #f2f2f2; }
         .sub-group { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 10px; }
         .stock-table th { background: #0275d8; color: white; }
-        .stock-table td:last-child { text-align: center; font-weight: bold; }
+        .stock-table td { text-align: center; }
+        .stock-table td:first-child { text-align: left; font-weight: bold; }
         
         .menu-double { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
         .action-card { background: #f0f8ff; border: 2px solid #0275d8; padding: 30px; border-radius: 8px; width: 250px; text-align: center; cursor: pointer; transition: 0.2s; }
@@ -70,7 +71,7 @@
         <div class="menu-double">
             <div class="action-card" onclick="ouvrirStockMagasin()">
                 <h3>📊 Voir le Stock</h3>
-                <p>Consulter les stocks en direct par parts et parfums</p>
+                <p>Consulter les stocks en direct</p>
             </div>
             <div class="action-card" onclick="ouvrirCommandeMagasin()">
                 <h3>📝 Passer une Commande</h3>
@@ -393,33 +394,36 @@
         });
     });
 
-    function genererTableauxParParts(stocksObj) {
-        let partsList = ["4 parts", "6 parts", "8 parts"];
+    // Génération du tableau unifié (Parfum en ligne, Parts en colonnes par catégorie)
+    function genererTableauStock(stocksObj) {
+        let categories = {
+            "❄️ Bûches Glacées": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
+            "🧈 Bûches Traditionnelles au Beurre": ["Marron", "Chocolat", "Café"],
+            "🔥 Omelettes Norvégiennes": ["Vanille", "Rhum Raisin"]
+        };
+
         let html = "";
+        let partsList = ["4 parts", "6 parts", "8 parts"];
 
-        partsList.forEach(part => {
-            html += `<h4>🍰 Bûches de ${part}</h4>`;
-            html += `<table class="stock-table"><tr><th>Catégorie</th><th>Parfum</th><th>Quantité restante</th></tr>`;
+        for (let [catNom, parfums] of Object.entries(categories)) {
+            html += `<h4>${catNom}</h4>`;
+            html += `<table class="stock-table"><tr><th>Parfum</th>`;
+            partsList.forEach(p => html += `<th>${p}</th>`);
+            html += `</tr>`;
 
-            let elements = [
-                { cat: "Glacée", parfums: ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"] },
-                { cat: "Tradition", parfums: ["Marron", "Chocolat", "Café"] },
-                { cat: "Omelette", parfums: ["Vanille", "Rhum Raisin"] }
-            ];
-
-            elements.forEach(item => {
-                item.parfums.forEach(parfum => {
-                    let cle = `${item.cat} - ${parfum} (${part})`;
+            parfums.forEach(parfum => {
+                let prefixe = catNom.includes("Glacée") ? "Glacée" : (catNom.includes("Traditionnelles") ? "Tradition" : "Omelette");
+                html += `<tr><td>${parfum}</td>`;
+                partsList.partsList = partsList || ["4 parts", "6 parts", "8 parts"];
+                partsList.forEach(part => {
+                    let cle = `${prefixe} - ${parfum} (${part})`;
                     let qte = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
-                    let nomCatAffichage = item.cat === "Glacée" ? "❄️ Glacée" : (item.cat === "Tradition" ? "🧈 Traditionnelle" : "🔥 Omelette Norvégienne");
-                    
-                    html += `<tr><td>${nomCatAffichage}</td><td>${parfum}</td><td>${qte}</td></tr>`;
+                    html += `<td><b>${qte}</b></td>`;
                 });
+                html += `</tr>`;
             });
-
             html += `</table>`;
-        });
-
+        }
         return html;
     }
 
@@ -430,7 +434,7 @@
             // Affichage Stock Magasin
             if (document.getElementById('magasin-stock-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif];
-                document.getElementById('stock-magasin-content').innerHTML = genererTableauxParParts(stocks);
+                document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
             // Affichage Stock Labo
@@ -440,7 +444,7 @@
                 
                 for (let magasin in stocksRestants) {
                     htmlStock += `<h3>📍 Boutique : ${magasin}</h3>`;
-                    htmlStock += genererTableauxParParts(stocksRestants[magasin]);
+                    htmlStock += genererTableauStock(stocksRestants[magasin]);
                 }
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
             }
