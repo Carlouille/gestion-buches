@@ -19,7 +19,7 @@
         .back-btn { background: #6c757d; margin-bottom: 20px; width: auto; padding: 8px 15px; }
         .back-btn:hover { background: #5a6268; }
         
-        #home-screen { text-align: center; padding: 20px; }
+        #home-screen { display: block; text-align: center; padding: 20px; }
         .menu-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
         .menu-card { background: #e8f4fd; border: 2px solid #b6e0fe; padding: 20px; border-radius: 8px; width: 200px; cursor: pointer; transition: 0.2s; text-align: center; }
         .menu-card:hover { background: #d0e8fc; transform: translateY(-3px); }
@@ -31,13 +31,17 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
         th { background: #f2f2f2; }
-        .sub-group { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 10px; }
+        .sub-group { background: #f9f9f9; padding: 12px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 15px; }
+        .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .item-row span { flex: 2; font-size: 14px; }
+        .item-row select { flex: 1.5; padding: 6px; }
+        .item-row input { flex: 1; padding: 6px; }
         .stock-table th { background: #0275d8; color: white; }
         .stock-table td { text-align: center; }
         .stock-table td:first-child { text-align: left; font-weight: bold; }
         
-        .menu-double { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
-        .action-card { background: #f0f8ff; border: 2px solid #0275d8; padding: 30px; border-radius: 8px; width: 250px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .menu-double { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+        .action-card { background: #f0f8ff; border: 2px solid #0275d8; padding: 25px; border-radius: 8px; width: 220px; text-align: center; cursor: pointer; transition: 0.2s; }
         .action-card:hover { background: #e0f0ff; transform: translateY(-3px); }
         .action-card h3 { color: #0275d8; margin-top: 0; }
         .labo-action-card { background: #fffdf5; border: 2px solid #ffc107; }
@@ -51,7 +55,7 @@
     <h1>🎄 Gestion des Bûches de Noël</h1>
 
     <!-- Écran d'accueil principal -->
-    <div id="home-screen" class="view" style="display: block;">
+    <div id="home-screen" class="view">
         <h2>Choisissez votre espace</h2>
         <div class="menu-grid">
             <div class="menu-card" onclick="choisirMagasin('Toulon')"><h3>📍 Toulon</h3></div>
@@ -72,8 +76,12 @@
                 <p>Consulter les stocks en direct</p>
             </div>
             <div class="action-card" onclick="ouvrirCommandeMagasin()">
-                <h3>📝 Passer une Commande</h3>
+                <h3>📝 Passer Commande</h3>
                 <p>Enregistrer une commande client</p>
+            </div>
+            <div class="action-card" onclick="ouvrirCommandesJourMagasin()">
+                <h3>📅 Commandes du Jour</h3>
+                <p>Vérifier les retraits par date</p>
             </div>
         </div>
     </div>
@@ -81,15 +89,19 @@
     <!-- Écran Choix Actions Laboratoire -->
     <div id="labo-menu-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
-        <h2>🏭 Espace Laboratoire</h2>
+        <h2>🏭 Espace Laboratoire / Expéditions</h2>
         <div class="menu-double">
             <div class="action-card labo-action-card" onclick="ouvrirStockLabo()">
                 <h3>📊 Voir les Stocks</h3>
                 <p>Consulter les stocks de chaque magasin</p>
             </div>
             <div class="action-card labo-action-card" onclick="ouvrirCommandesLabo()">
-                <h3>📋 Voir les Commandes</h3>
-                <p>Consulter les commandes enregistrées par boutique</p>
+                <h3>📋 Commandes Globales</h3>
+                <p>Toutes les commandes par boutique</p>
+            </div>
+            <div class="action-card labo-action-card" onclick="ouvrirExpeditionsLabo()">
+                <h3>🚚 Expéditions Jour par Jour</h3>
+                <p>Détail des envois à préparer par date</p>
             </div>
         </div>
     </div>
@@ -99,6 +111,17 @@
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-stock-magasin">📊 Stock en direct</h2>
         <div id="stock-magasin-content"></div>
+    </div>
+
+    <!-- Espace Commandes du Jour Magasin -->
+    <div id="magasin-commandes-jour-screen" class="view">
+        <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
+        <h2>📅 Commandes à retirer par date</h2>
+        <div class="form-group">
+            <label>Sélectionner la date de retrait :</label>
+            <input type="date" id="filtreDateMagasin" onchange="chargerDonnees()">
+        </div>
+        <div id="commandes-jour-magasin-content"></div>
     </div>
 
     <!-- Espace Passer une Commande Magasin -->
@@ -112,59 +135,24 @@
                 <input type="text" id="nomClient" required>
             </div>
 
+            <p style="font-size: 13px; color: #666; font-style: italic;">Laissez la quantité à 0 ou vide pour les parfums non souhaités.</p>
+
             <!-- Bûches Glacées -->
             <div class="sub-group">
-                <label>❄️ Bûche Glacée :</label>
-                <select id="bucheGlacee" style="margin-bottom:8px;">
-                    <option value="">-- Aucun --</option>
-                    <option value="Glacée - Marron">Marron</option>
-                    <option value="Glacée - Vanille">Vanille</option>
-                    <option value="Glacée - Chocolat">Chocolat</option>
-                    <option value="Glacée - Mangue">Mangue</option>
-                    <option value="Glacée - Passion">Passion</option>
-                    <option value="Glacée - Framboise">Framboise</option>
-                </select>
-                <select id="partsGlacee">
-                    <option value="4 parts">4 parts</option>
-                    <option value="6 parts">6 parts</option>
-                    <option value="8 parts">8 parts</option>
-                </select>
+                <label>❄️ Bûches Glacées :</label>
+                <div id="liste-glacees"></div>
             </div>
 
             <!-- Bûches Traditionnelles -->
             <div class="sub-group">
-                <label>🧈 Bûche Traditionnelle au Beurre :</label>
-                <select id="bucheBeurre" style="margin-bottom:8px;">
-                    <option value="">-- Aucun --</option>
-                    <option value="Tradition - Marron">Marron</option>
-                    <option value="Tradition - Chocolat">Chocolat</option>
-                    <option value="Tradition - Café">Café</option>
-                </select>
-                <select id="partsBeurre">
-                    <option value="4 parts">4 parts</option>
-                    <option value="6 parts">6 parts</option>
-                    <option value="8 parts">8 parts</option>
-                </select>
+                <label>🧈 Bûches Traditionnelles au Beurre :</label>
+                <div id="liste-tradition"></div>
             </div>
 
             <!-- Omelettes Norvégiennes -->
             <div class="sub-group">
-                <label>🔥 Omelette Norvégienne :</label>
-                <select id="bucheOmelette" style="margin-bottom:8px;">
-                    <option value="">-- Aucun --</option>
-                    <option value="Omelette - Vanille">Vanille</option>
-                    <option value="Omelette - Rhum Raisin">Rhum Raisin</option>
-                </select>
-                <select id="partsOmelette">
-                    <option value="4 parts">4 parts</option>
-                    <option value="6 parts">6 parts</option>
-                    <option value="8 parts">8 parts</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Quantité globale pour cette ligne :</label>
-                <input type="number" id="quantite" value="1" min="1" required>
+                <label>🔥 Omelettes Norvégiennes :</label>
+                <div id="liste-omelettes"></div>
             </div>
 
             <div class="form-group">
@@ -188,6 +176,17 @@
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📋 Commandes par magasin</h2>
         <div id="recap-par-magasin"></div>
+    </div>
+
+    <!-- Espace Expéditions Jour par Jour Labo -->
+    <div id="labo-expeditions-screen" class="view">
+        <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
+        <h2>🚚 Expéditions et Préparations Jour par Jour</h2>
+        <div class="form-group">
+            <label>Sélectionner la date d'expédition / retrait :</label>
+            <input type="date" id="filtreDateLabo" onchange="chargerDonnees()">
+        </div>
+        <div id="expeditions-labo-content"></div>
     </div>
 
     <!-- Espace Gestion -->
@@ -249,6 +248,53 @@
         "Omelette": ["Vanille", "Rhum Raisin"]
     };
 
+    function initialiserChampsCommande() {
+        // Glacées
+        let htmlG = "";
+        parfumsParCategorie["Glacée"].forEach(p => {
+            htmlG += `<div class="item-row">
+                <span><b>${p}</b></span>
+                <select id="parts_Glacée_${p}">
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
+                </select>
+                <input type="number" id="qte_Glacée_${p}" value="0" min="0" placeholder="Qté">
+            </div>`;
+        });
+        document.getElementById('liste-glacees').innerHTML = htmlG;
+
+        // Tradition
+        let htmlT = "";
+        parfumsParCategorie["Tradition"].forEach(p => {
+            htmlT += `<div class="item-row">
+                <span><b>${p}</b></span>
+                <select id="parts_Tradition_${p}">
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
+                </select>
+                <input type="number" id="qte_Tradition_${p}" value="0" min="0" placeholder="Qté">
+            </div>`;
+        });
+        document.getElementById('liste-tradition').innerHTML = htmlT;
+
+        // Omelette
+        let htmlO = "";
+        parfumsParCategorie["Omelette"].forEach(p => {
+            htmlO += `<div class="item-row">
+                <span><b>${p}</b></span>
+                <select id="parts_Omelette_${p}">
+                    <option value="4 parts">4 parts</option>
+                    <option value="6 parts">6 parts</option>
+                    <option value="8 parts">8 parts</option>
+                </select>
+                <input type="number" id="qte_Omelette_${p}" value="0" min="0" placeholder="Qté">
+            </div>`;
+        });
+        document.getElementById('liste-omelettes').innerHTML = htmlO;
+    }
+
     function mettreAJourParfumsGestion() {
         const catSelect = document.getElementById('gestionCategorie').value;
         const parfumSelect = document.getElementById('gestionParfum');
@@ -266,6 +312,11 @@
 
     window.onload = function() {
         mettreAJourParfumsGestion();
+        initialiserChampsCommande();
+        let aujourdhui = new Date().toISOString().split('T')[0];
+        document.getElementById('filtreDateMagasin').value = aujourdhui;
+        document.getElementById('filtreDateLabo').value = aujourdhui;
+        document.getElementById('home-screen').style.display = 'block';
     };
 
     function choisirMagasin(nom) {
@@ -288,6 +339,12 @@
         document.getElementById('titre-commande-magasin').innerText = "📝 Passer une commande - " + magasinActif;
     }
 
+    function ouvrirCommandesJourMagasin() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('magasin-commandes-jour-screen').style.display = 'block';
+        chargerDonnees();
+    }
+
     function choisirLaboMenu() {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('labo-menu-screen').style.display = 'block';
@@ -302,6 +359,12 @@
     function ouvrirCommandesLabo() {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('labo-orders-screen').style.display = 'block';
+        chargerDonnees();
+    }
+
+    function ouvrirExpeditionsLabo() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('labo-expeditions-screen').style.display = 'block';
         chargerDonnees();
     }
 
@@ -353,20 +416,31 @@
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const g = document.getElementById('bucheGlacee').value;
-        const pG = document.getElementById('partsGlacee').value;
-        const b = document.getElementById('bucheBeurre').value;
-        const pB = document.getElementById('partsBeurre').value;
-        const o = document.getElementById('bucheOmelette').value;
-        const pO = document.getElementById('partsOmelette').value;
-
         let selections = [];
-        if (g) selections.push(`${g} (${pG})`);
-        if (b) selections.push(`${b} (${pB})`);
-        if (o) selections.push(`${o} (${pO})`);
+        let qteTotaleGlobale = 0;
+
+        let categoriesMap = {
+            "Glacée": parfumsParCategorie["Glacée"],
+            "Tradition": parfumsParCategorie["Tradition"],
+            "Omelette": parfumsParCategorie["Omelette"]
+        };
+
+        for (let [cat, parfums] of Object.entries(categoriesMap)) {
+            parfums.forEach(p => {
+                let qteInput = document.getElementById(`qte_${cat}_${p}`);
+                let partsSelect = document.getElementById(`parts_${cat}_${p}`);
+                if (qteInput && partsSelect) {
+                    let qte = parseInt(qteInput.value) || 0;
+                    if (qte > 0) {
+                        selections.push(`${qte}x ${cat} - ${p} (${partsSelect.value})`);
+                        qteTotaleGlobale += qte;
+                    }
+                }
+            });
+        }
 
         if (selections.length === 0) {
-            alert("Veuillez sélectionner au moins une bûche !");
+            alert("Veuillez sélectionner au moins une bûche avec une quantité supérieure à 0 !");
             return;
         }
 
@@ -376,7 +450,7 @@
             magasin: magasinActif,
             nomClient: document.getElementById('nomClient').value,
             typeBuche: typeBucheFinal,
-            quantite: parseInt(document.getElementById('quantite').value),
+            quantite: qteTotaleGlobale,
             dateRetrait: document.getElementById('dateRetrait').value
         };
 
@@ -384,6 +458,7 @@
         .then(() => { 
             alert("Commande enregistrée avec succès !"); 
             document.getElementById('orderForm').reset(); 
+            initialiserChampsCommande();
             choisirMagasin(magasinActif); 
         })
         .catch(error => {
@@ -427,15 +502,36 @@
         fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(res => {
+            let commandesFiltrees = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
+
+            // 1. Affichage Stock Magasin
             if (document.getElementById('magasin-stock-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif];
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
+            // 2. Affichage Commandes du Jour Magasin
+            if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
+                let dateVouue = document.getElementById('filtreDateMagasin').value;
+                let cmdMag = commandesFiltrees.filter(c => c.magasin === magasinActif && c.dateRetrait && c.dateRetrait.startsWith(dateVouue));
+                
+                let html = `<h3>Retraits prévus le : ${dateVouue ? new Date(dateVouue).toLocaleDateString('fr-FR') : 'Toutes'}</h3>`;
+                if (cmdMag.length === 0) {
+                    html += "<p>Aucune commande à récupérer pour cette date.</p>";
+                } else {
+                    html += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté Globale</th></tr>";
+                    cmdMag.forEach(row => {
+                        html += `<tr><td><b>${row.nomClient}</b></td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
+                    });
+                    html += "</table>";
+                }
+                document.getElementById('commandes-jour-magasin-content').innerHTML = html;
+            }
+
+            // 3. Affichage Stock Labo
             if (document.getElementById('labo-stock-screen').style.display === 'block') {
                 let stocksRestants = res.stocksRestants;
                 let htmlStock = "";
-                
                 for (let magasin in stocksRestants) {
                     htmlStock += `<h3>📍 Boutique : ${magasin}</h3>`;
                     htmlStock += genererTableauStock(stocksRestants[magasin]);
@@ -443,9 +539,9 @@
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
             }
 
+            // 4. Affichage Commandes Labo Globales
             if (document.getElementById('labo-orders-screen').style.display === 'block') {
-                let commandes = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]")
-                                             .sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
+                let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
                 let htmlCommandes = "";
                 
@@ -464,6 +560,28 @@
                     }
                 });
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
+            }
+
+            // 5. Affichage Expéditions Jour par Jour Labo
+            if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
+                let dateVouue = document.getElementById('filtreDateLabo').value;
+                let magasins = ["Toulon", "Carqueiranne", "Hyères"];
+                let htmlExp = `<h3>Expéditions prévues le : ${dateVouue ? new Date(dateVouue).toLocaleDateString('fr-FR') : ''}</h3>`;
+
+                magasins.forEach(m => {
+                    let cmdMag = commandesFiltrees.filter(c => c.magasin === m && c.dateRetrait && c.dateRetrait.startsWith(dateVouue));
+                    htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
+                    if (cmdMag.length === 0) {
+                        htmlExp += "<p>Aucune expédition prévue pour ce magasin à cette date.</p>";
+                    } else {
+                        htmlExp += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
+                        cmdMag.forEach(row => {
+                            htmlExp += `<tr><td><b>${row.nomClient}</b></td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
+                        });
+                        htmlExp += "</table>";
+                    }
+                });
+                document.getElementById('expeditions-labo-content').innerHTML = htmlExp;
             }
         })
         .catch(error => console.error("Erreur de chargement:", error));
