@@ -490,11 +490,18 @@
 
             if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
                 let dateVouue = document.getElementById('filtreDateMagasin').value;
-                let cmdMag = commandesFiltrees.filter(c => c.magasin === magasinActif && c.dateRetrait && String(c.dateRetrait).substring(0, 10) === dateVouue);
+                
+                let cmdMag = commandesFiltrees.filter(c => {
+                    if (!c.magasin || !c.dateRetrait) return false;
+                    let magFichier = String(c.magasin).trim();
+                    let magActif = String(magasinActif).trim();
+                    let dateFichier = String(c.dateRetrait).substring(0, 10);
+                    return magFichier === magActif && dateFichier === dateVouue;
+                });
                 
                 let html = `<h3>Retraits prévus le : ${dateVouue}</h3>`;
                 if (cmdMag.length === 0) {
-                    html += "<p>Aucune commande pour cette date.</p>";
+                    html += "<p>Aucune commande trouvée pour cette date.</p>";
                 } else {
                     html += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
                     cmdMag.forEach(row => {
@@ -522,7 +529,7 @@
                 
                 magasins.forEach(m => {
                     htmlCommandes += `<h4>📍 Boutique : ${m}</h4>`;
-                    let cmd = commandes.filter(c => c.magasin === m);
+                    let cmd = commandes.filter(c => String(c.magasin).trim() === m);
                     if (cmd.length === 0) {
                         htmlCommandes += "<p>Aucune commande.</p>";
                     } else {
@@ -542,7 +549,11 @@
                 let htmlExp = `<h3>Expéditions prévues le : ${dateVouue}</h3>`;
 
                 magasins.forEach(m => {
-                    let cmdMag = commandesFiltrees.filter(c => c.magasin === m && c.dateRetrait && String(c.dateRetrait).substring(0, 10) === dateVouue);
+                    let cmdMag = commandesFiltrees.filter(c => {
+                        if (!c.magasin || !c.dateRetrait) return false;
+                        return String(c.magasin).trim() === m && String(c.dateRetrait).substring(0, 10) === dateVouue;
+                    });
+                    
                     htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
                     if (cmdMag.length === 0) {
                         htmlExp += "<p>Aucune expédition à cette date.</p>";
