@@ -378,8 +378,9 @@
                 partsList.forEach(part => {
                     let cle = `${info.prefix} - ${parfum} (${part})`;
                     let qteDispo = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
+                    
                     html += `<td>
-                        <input type="number" min="0" value="0" data-produit="${cle}" class="input-qte-cmd">
+                        <input type="number" min="0" max="${qteDispo}" value="0" data-produit="${cle}" class="input-qte-cmd" oninput="verifierMaxStock(this, ${qteDispo})">
                         <span class="stock-badge">(Dispo: ${qteDispo})</span>
                     </td>`;
                 });
@@ -390,21 +391,43 @@
         return html;
     }
 
+    function verifierMaxStock(input, maxVal) {
+        let val = parseInt(input.value) || 0;
+        if (val > maxVal) {
+            alert(`Stock insuffisant ! Il ne reste que ${maxVal} exemplaire(s) disponible(s) pour ce produit.`);
+            input.value = maxVal;
+        }
+        if (val < 0) {
+            input.value = 0;
+        }
+    }
+
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
         let inputs = document.querySelectorAll('.input-qte-cmd');
         let selections = [];
         let qteTotaleGlobale = 0;
+        let erreurStock = false;
 
         inputs.forEach(input => {
             let qte = parseInt(input.value) || 0;
             if (qte > 0) {
                 let produit = input.getAttribute('data-produit');
+                let maxDispo = parseInt(input.getAttribute('max')) || 20;
+
+                if (qte > maxDispo) {
+                    alert(`Erreur : Vous demandez ${qte} '${produit}', mais il n'en reste que ${maxDispo} en stock.`);
+                    erreurStock = true;
+                    return;
+                }
+
                 selections.push(`${qte}x ${produit}`);
                 qteTotaleGlobale += qte;
             }
         });
+
+        if (erreurStock) return;
 
         if (selections.length === 0) {
             alert("Veuillez sélectionner au moins une bûche en modifiant les quantités !");
