@@ -42,11 +42,10 @@
         .labo-action-card { background: #fffdf5; border: 2px solid #ffc107; }
         .labo-action-card h3 { color: #856404; }
         
-        .panier-box { background: #fffdf0; border: 2px dashed #f0ad4e; padding: 15px; border-radius: 6px; margin-top: 20px; }
-        .btn-supprimer { background: #d9534f; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; width: auto; font-size: 12px; }
-        .btn-supprimer:hover { background: #c9302c; }
-        .btn-ajout-panier { background: #0275d8; }
-        .btn-ajout-panier:hover { background: #025aa5; }
+        .order-input-table input[type="number"] { width: 70px; padding: 5px; text-align: center; }
+        .order-input-table td { text-align: center; vertical-align: middle; }
+        .order-input-table td:first-child { text-align: left; font-weight: bold; }
+        .stock-badge { font-size: 12px; color: #d9534f; display: block; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -124,7 +123,7 @@
         <div id="commandes-jour-magasin-content">Chargement...</div>
     </div>
 
-    <!-- Passer Commande -->
+    <!-- Passer Commande avec Grille de Stock en direct -->
     <div id="magasin-order-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-commande-magasin">📝 Passer une commande</h2>
@@ -132,42 +131,12 @@
         <form id="orderForm">
             <div class="form-group">
                 <label>Nom du client :</label>
-                <input type="text" id="nomClient" required>
+                <input type="text" id="nomClient" required style="width: 100%;">
             </div>
 
             <div class="sub-group">
-                <h4>Ajouter des bûches au panier :</h4>
-                <div class="form-group">
-                    <label>Catégorie :</label>
-                    <select id="selCategorie" onchange="mettreAJourParfumsCommande()">
-                        <option value="Glacée">Bûche Glacée</option>
-                        <option value="Tradition">Tradition au Beurre</option>
-                        <option value="Omelette">Omelette Norvégienne</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Parfum :</label>
-                    <select id="selParfum"></select>
-                </div>
-                <div class="form-group">
-                    <label>Nombre de parts :</label>
-                    <select id="selParts">
-                        <option value="4 parts">4 parts</option>
-                        <option value="6 parts">6 parts</option>
-                        <option value="8 parts">8 parts</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Quantité :</label>
-                    <input type="number" id="selQuantite" value="1" min="1">
-                </div>
-                <button type="button" class="btn-ajout-panier" onclick="ajouterAuPanier()">➕ Ajouter à la commande du client</button>
-            </div>
-
-            <!-- Panier / Récapitulatif -->
-            <div class="panier-box">
-                <h4>🛒 Panier de la commande en cours :</h4>
-                <div id="panier-contenu"><p style="color:#777; font-style:italic;">Aucun produit ajouté pour l'instant.</p></div>
+                <h4>Sélectionnez les quantités souhaitées (Indicateur de stock en direct) :</h4>
+                <div id="grille-saisie-commande">Chargement des stocks...</div>
             </div>
 
             <div class="form-group" style="margin-top: 20px;">
@@ -175,7 +144,7 @@
                 <input type="date" id="dateRetrait" required>
             </div>
 
-            <button type="submit" id="btn-valider-commande" style="background:#5cb85c;">Valider et enregistrer la commande</button>
+            <button type="submit" style="background:#5cb85c; font-size: 16px; padding: 12px;">Valider et enregistrer la commande</button>
         </form>
     </div>
 
@@ -249,69 +218,13 @@
 <script>
     const WEB_APP_URL = "VOTRE_WEB_APP_URL_ICI"; 
     let magasinActif = "";
-    let panierActuel = []; // Tableau qui stocke les articles ajoutés au panier
+    let dernierStockActuel = {}; // Pour stocker les stocks récupérés en direct
 
     const parfumsParCategorie = {
         "Glacée": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
         "Tradition": ["Marron", "Chocolat", "Café"],
         "Omelette": ["Vanille", "Rhum Raisin"]
     };
-
-    function mettreAJourParfumsCommande() {
-        const catSelect = document.getElementById('selCategorie').value;
-        const parfumSelect = document.getElementById('selParfum');
-        parfumSelect.innerHTML = "";
-        
-        if (parfumsParCategorie[catSelect]) {
-            parfumsParCategorie[catSelect].forEach(p => {
-                let opt = document.createElement('option');
-                opt.value = p;
-                opt.textContent = p;
-                parfumSelect.appendChild(opt);
-            });
-        }
-    }
-
-    function ajouterAuPanier() {
-        let cat = document.getElementById('selCategorie').value;
-        let parfum = document.getElementById('selParfum').value;
-        let parts = document.getElementById('selParts').value;
-        let quantite = parseInt(document.getElementById('selQuantite').value) || 1;
-
-        if (quantite <= 0) {
-            alert("Veuillez indiquer une quantité valide.");
-            return;
-        }
-
-        // Ajout au panier en mémoire
-        panierActuel.push({ cat, parfum, parts, quantite });
-        afficherPanier();
-    }
-
-    function supprimerDuPanier(index) {
-        panierActuel.splice(index, 1);
-        afficherPanier();
-    }
-
-    function afficherPanier() {
-        let container = document.getElementById('panier-contenu');
-        if (panierActuel.length === 0) {
-            container.innerHTML = `<p style="color:#777; font-style:italic;">Aucun produit ajouté pour l'instant.</p>`;
-            return;
-        }
-
-        let html = "<table><tr><th>Produit</th><th>Parts</th><th>Qté</th><th>Action</th></tr>";
-        panierActuel.forEach((item, index) => {
-            html += `<tr>
-                <td><b>${item.cat} - ${item.parfum}</b></td>
-                <td>${item.parts}</td>
-                <td><b>${item.quantite}</b></td>
-                <td><button type="button" class="btn-supprimer" onclick="supprimerDuPanier(${index})">❌ Supprimer</button></td>
-            </tr>`;
-        });
-        html += "</table>";
-        container.innerHTML = html;
-    }
 
     function mettreAJourParfumsGestion() {
         const catSelect = document.getElementById('gestionCategorie').value;
@@ -330,7 +243,6 @@
 
     window.onload = function() {
         mettreAJourParfumsGestion();
-        mettreAJourParfumsCommande();
         let aujourdhui = new Date().toISOString().split('T')[0];
         document.getElementById('filtreDateMagasin').value = aujourdhui;
         document.getElementById('filtreDateLabo').value = aujourdhui;
@@ -355,10 +267,8 @@
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('magasin-order-screen').style.display = 'block';
         document.getElementById('titre-commande-magasin').innerText = "📝 Passer une commande - " + magasinActif;
-        panierActuel = [];
-        afficherPanier();
         document.getElementById('orderForm').reset();
-        mettreAJourParfumsCommande();
+        chargerDonneesPourFormulaireCommande();
     }
 
     function ouvrirCommandesJourMagasin() {
@@ -432,23 +342,71 @@
         .catch(error => alert("Erreur de synchronisation."));
     }
 
-    // Validation finale de la commande multi-produits
+    // Charger les stocks pour alimenter la grille de saisie de commande
+    function chargerDonneesPourFormulaireCommande() {
+        fetch(WEB_APP_URL)
+        .then(res => res.json())
+        .then(res => {
+            dernierStockActuel = res.stocksRestants[magasinActif] || {};
+            document.getElementById('grille-saisie-commande').innerHTML = genererTableauSaisieCommande(dernierStockActuel);
+        })
+        .catch(error => console.error("Erreur chargement stock formulaire:", error));
+    }
+
+    function genererTableauSaisieCommande(stocksObj) {
+        let categories = {
+            "❄️ Bûches Glacées": { prefix: "Glacée", parfums: ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"] },
+            "🧈 Bûches Traditionnelles au Beurre": { prefix: "Tradition", parfums: ["Marron", "Chocolat", "Café"] },
+            "🔥 Omelettes Norvégiennes": { prefix: "Omelette", parfums: ["Vanille", "Rhum Raisin"] }
+        };
+
+        let html = "";
+        let partsList = ["4 parts", "6 parts", "8 parts"];
+
+        for (let [catNom, info] of Object.entries(categories)) {
+            html += `<h4>${catNom}</h4>`;
+            html += `<table class="order-input-table"><tr><th>Parfum</th>`;
+            partsList.forEach(p => html += `<th>${p}</th>`);
+            html += `</tr>`;
+
+            info.parfums.forEach(parfum => {
+                html += `<tr><td>${parfum}</td>`;
+                partsList.forEach(part => {
+                    let cle = `${info.prefix} - ${parfum} (${part})`;
+                    let qteDispo = stocksObj[cle] !== undefined ? stocksObj[cle] : 20;
+                    html += `<td>
+                        <input type="number" min="0" value="0" data-produit="${cle}" class="input-qte-cmd">
+                        <span class="stock-badge">(Dispo: ${qteDispo})</span>
+                    </td>`;
+                });
+                html += `</tr>`;
+            });
+            html += `</table>`;
+        }
+        return html;
+    }
+
+    // Validation finale de la commande multi-produits depuis la grille
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        if (panierActuel.length === 0) {
-            alert("Votre panier est vide ! Ajoutez au moins une bûche.");
-            return;
-        }
-
+        let inputs = document.querySelectorAll('.input-qte-cmd');
         let selections = [];
         let qteTotaleGlobale = 0;
 
-        panierActuel.forEach(item => {
-            // Format strictement reconnu par le script Google Sheets : "1x Glacée - Marron (4 parts)"
-            selections.push(`${item.quantite}x ${item.cat} - ${item.parfum} (${item.parts})`);
-            qteTotaleGlobale += item.quantite;
+        inputs.forEach(input => {
+            let qte = parseInt(input.value) || 0;
+            if (qte > 0) {
+                let produit = input.getAttribute('data-produit');
+                selections.push(`${qte}x ${produit}`);
+                qteTotaleGlobale += qte;
+            }
         });
+
+        if (selections.length === 0) {
+            alert("Veuillez sélectionner au moins une bûche en modifiant les quantités !");
+            return;
+        }
 
         const data = {
             magasin: magasinActif,
@@ -602,7 +560,7 @@
                     let cmd = commandes.filter(c => String(c.magasin).trim() === m);
                     htmlCommandes += creerLignesTableau(cmd, true);
                 });
-                document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
+                document.getElementById('repan-par-magasin') ? document.getElementById('repan-par-magasin').innerHTML = htmlCommandes : document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
 
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
