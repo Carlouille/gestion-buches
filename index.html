@@ -479,7 +479,7 @@
         return html;
     }
 
-    function chargerDonnees() {
+function chargerDonnees() {
         fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(res => {
@@ -491,17 +491,32 @@
             }
 
             if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
-                let dateVouue = document.getElementById('filtreDateMagasin').value;
+                let dateInputVal = document.getElementById('filtreDateMagasin').value; // Format AAAA-MM-JJ fourni par l'input
                 
                 let cmdMag = commandesFiltrees.filter(c => {
                     if (!c.magasin || !c.dateRetrait) return false;
                     let magFichier = String(c.magasin).trim();
                     let magActif = String(magasinActif).trim();
-                    let dateFichier = String(c.dateRetrait).substring(0, 10);
-                    return magFichier === magActif && dateFichier === dateVouue;
+                    
+                    // Nettoyage et normalisation de la date du fichier pour comparer uniquement AAAA-MM-JJ
+                    let dateFichierBrute = String(c.dateRetrait).trim();
+                    let dateFichierNormalisee = dateFichierBrute.substring(0, 10);
+                    
+                    // Si le fichier stocke au format JJ/MM/AAAA, on convertit pour comparer correctement
+                    if (dateFichierBrute.includes('/')) {
+                        let parties = dateFichierBrute.split('/');
+                        if (parties.length === 3) {
+                            // Si c'est au format JJ/MM/AAAA
+                            if (parties[0].length <= 2 && parties[2].length === 4) {
+                                dateFichierNormalisee = `${parties[2]}-${parties[1].padStart(2, '0')}-${parties[0].padStart(2, '0')}`;
+                            }
+                        }
+                    }
+
+                    return magFichier === magActif && dateFichierNormalisee === dateInputVal;
                 });
                 
-                let html = `<h3>Retraits prévus le : ${dateVouue}</h3>`;
+                let html = `<h3>Retraits prévus le : ${dateInputVal}</h3>`;
                 if (cmdMag.length === 0) {
                     html += "<p>Aucune commande trouvée pour cette date.</p>";
                 } else {
@@ -546,14 +561,22 @@
             }
 
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
-                let dateVouue = document.getElementById('filtreDateLabo').value;
+                let dateInputVal = document.getElementById('filtreDateLabo').value;
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
-                let htmlExp = `<h3>Expéditions prévues le : ${dateVouue}</h3>`;
+                let htmlExp = `<h3>Expéditions prévues le : ${dateInputVal}</h3>`;
 
                 magasins.forEach(m => {
                     let cmdMag = commandesFiltrees.filter(c => {
                         if (!c.magasin || !c.dateRetrait) return false;
-                        return String(c.magasin).trim() === m && String(c.dateRetrait).substring(0, 10) === dateVouue;
+                        let dateFichierBrute = String(c.dateRetrait).trim();
+                        let dateFichierNormalisee = dateFichierBrute.substring(0, 10);
+                        if (dateFichierBrute.includes('/')) {
+                            let parties = dateFichierBrute.split('/');
+                            if (parties.length === 3 && parties[2].length === 4) {
+                                dateFichierNormalisee = `${parties[2]}-${parties[1].padStart(2, '0')}-${parties[0].padStart(2, '0')}`;
+                            }
+                        }
+                        return String(c.magasin).trim() === m && dateFichierNormalisee === dateInputVal;
                     });
                     
                     htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
