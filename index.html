@@ -218,7 +218,7 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec"; 
     let magasinActif = "";
-    let dernierStockActuel = {}; // Pour stocker les stocks récupérés en direct
+    let dernierStockActuel = {}; 
 
     const parfumsParCategorie = {
         "Glacée": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
@@ -332,7 +332,12 @@
             dateRetrait: new Date().toISOString().split('T')[0]
         };
 
-        fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
+        fetch(WEB_APP_URL, { 
+            method: 'POST', 
+            mode: 'cors',
+            redirect: 'follow',
+            body: JSON.stringify(data) 
+        })
         .then(() => { 
             alert(`Stock mis à jour instantanément ! +${qte} ajoutés.`); 
             document.getElementById('stockForm').reset(); 
@@ -342,9 +347,8 @@
         .catch(error => alert("Erreur de synchronisation."));
     }
 
-    // Charger les stocks pour alimenter la grille de saisie de commande
     function chargerDonneesPourFormulaireCommande() {
-        fetch(WEB_APP_URL)
+        fetch(WEB_APP_URL, { mode: 'cors', redirect: 'follow' })
         .then(res => res.json())
         .then(res => {
             dernierStockActuel = res.stocksRestants[magasinActif] || {};
@@ -386,7 +390,6 @@
         return html;
     }
 
-    // Validation finale de la commande multi-produits depuis la grille
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -416,7 +419,12 @@
             dateRetrait: document.getElementById('dateRetrait').value
         };
 
-        fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
+        fetch(WEB_APP_URL, { 
+            method: 'POST', 
+            mode: 'cors',
+            redirect: 'follow',
+            body: JSON.stringify(data) 
+        })
         .then(() => { 
             alert("Commande validée et stock décompté avec succès !"); 
             choisirMagasin(magasinActif); 
@@ -456,10 +464,10 @@
     }
 
     function chargerDonnees() {
-        fetch(WEB_APP_URL)
+        fetch(WEB_APP_URL, { mode: 'cors', redirect: 'follow' })
         .then(res => res.json())
         .then(res => {
-            let commandesFiltrees = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
+            let commandesFiltrees = (res.commandes || []).filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
 
             commandesFiltrees.forEach(c => {
                 if (c.dateRetrait) {
@@ -560,7 +568,8 @@
                     let cmd = commandes.filter(c => String(c.magasin).trim() === m);
                     htmlCommandes += creerLignesTableau(cmd, true);
                 });
-                document.getElementById('repan-par-magasin') ? document.getElementById('repan-par-magasin').innerHTML = htmlCommandes : document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
+                let recapDiv = document.getElementById('recap-par-magasin');
+                if (recapDiv) recapDiv.innerHTML = htmlCommandes;
             }
 
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
