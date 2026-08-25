@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion Bûches de Noël - Réseau Artisanal</title>
+    <title>Gestion Bûches de Noël - Temps Réel</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -53,7 +53,7 @@
 <div class="container">
     <h1>🎄 Gestion des Bûches de Noël</h1>
 
-    <!-- Écran d'accueil principal -->
+    <!-- Écran d'accueil -->
     <div id="home-screen" class="view">
         <h2>Choisissez votre espace</h2>
         <div class="menu-grid">
@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <!-- Écran Choix Actions Magasin -->
+    <!-- Menu Magasin -->
     <div id="magasin-menu-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2 id="titre-choix-magasin">Boutique</h2>
@@ -85,7 +85,7 @@
         </div>
     </div>
 
-    <!-- Écran Choix Actions Laboratoire -->
+    <!-- Menu Labo -->
     <div id="labo-menu-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2>🏭 Espace Laboratoire / Expéditions</h2>
@@ -105,14 +105,14 @@
         </div>
     </div>
 
-    <!-- Espace Visualisation Stock Magasin -->
+    <!-- Stock Magasin -->
     <div id="magasin-stock-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-stock-magasin">📊 Stock en direct</h2>
-        <div id="stock-magasin-content">Chargement des stocks...</div>
+        <div id="stock-magasin-content">Chargement instantané...</div>
     </div>
 
-    <!-- Espace Commandes du Jour Magasin -->
+    <!-- Commandes du Jour Magasin -->
     <div id="magasin-commandes-jour-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2>📅 Commandes à retirer par date</h2>
@@ -123,7 +123,7 @@
         <div id="commandes-jour-magasin-content">Chargement...</div>
     </div>
 
-    <!-- Espace Passer une Commande Magasin -->
+    <!-- Passer Commande -->
     <div id="magasin-order-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-commande-magasin">📝 Passer une commande</h2>
@@ -134,7 +134,7 @@
                 <input type="text" id="nomClient" required>
             </div>
 
-            <p style="font-size: 13px; color: #666; font-style: italic;" id="info-stock-statut">Chargement des stocks en direct...</p>
+            <p style="font-size: 13px; color: #666; font-style: italic;" id="info-stock-statut">Vérification des stocks en temps réel...</p>
 
             <div id="form-items-container"></div>
 
@@ -143,25 +143,25 @@
                 <input type="date" id="dateRetrait" required>
             </div>
 
-            <button type="submit" id="btn-valider-commande" disabled>Valider la commande</button>
+            <button type="submit" id="btn-valider-commande">Valider la commande</button>
         </form>
     </div>
 
-    <!-- Espace Visualisation Stock Laboratoire -->
+    <!-- Stock Labo -->
     <div id="labo-stock-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📊 Stocks détaillés par magasin</h2>
         <div id="stock-global-content">Chargement...</div>
     </div>
 
-    <!-- Espace Visualisation Commandes Laboratoire -->
+    <!-- Commandes Globales Labo -->
     <div id="labo-orders-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📋 Commandes par magasin</h2>
         <div id="recap-par-magasin">Chargement...</div>
     </div>
 
-    <!-- Espace Expéditions Jour par Jour Labo -->
+    <!-- Expéditions Labo -->
     <div id="labo-expeditions-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>🚚 Expéditions et Préparations Jour par Jour</h2>
@@ -172,12 +172,10 @@
         <div id="expeditions-labo-content">Chargement...</div>
     </div>
 
-    <!-- Espace Gestion -->
+    <!-- Gestion / Réassort -->
     <div id="gestion-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2>⚙️ Réapprovisionnement des Stocks</h2>
-        <p>Ajoutez du stock en gros pour un magasin et un produit précis :</p>
-        
         <form id="stockForm" onsubmit="ajouterStockEnGros(event)">
             <div class="form-group">
                 <label>Magasin cible :</label>
@@ -187,7 +185,6 @@
                     <option value="Hyères">Hyères</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label>Catégorie :</label>
                 <select id="gestionCategorie" required onchange="mettreAJourParfumsGestion()">
@@ -196,12 +193,10 @@
                     <option value="Omelette">Omelette Norvégienne</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label>Parfum :</label>
                 <select id="gestionParfum" required></select>
             </div>
-
             <div class="form-group">
                 <label>Nombre de parts :</label>
                 <select id="gestionParts" required>
@@ -210,19 +205,17 @@
                     <option value="8 parts">8 parts</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <label>Quantité à ajouter (ex: 10, 20...) :</label>
+                <label>Quantité à ajouter :</label>
                 <input type="number" id="gestionQuantite" value="10" min="1" required>
             </div>
-
             <button type="submit" style="background:#0275d8;">Valider l'ajout de stock</button>
         </form>
     </div>
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec"; // Remplacez par votre URL Web App Google Apps Script
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec"; 
     let magasinActif = "";
     let dernierStockRecupere = {};
 
@@ -261,12 +254,6 @@
     }
 
     async function rafraichirStocksFormulaire() {
-        let infoStatut = document.getElementById('info-stock-statut');
-        let btnValider = document.getElementById('btn-valider-commande');
-        
-        if (infoStatut) infoStatut.innerText = "Chargement des stocks en direct...";
-        if (btnValider) btnValider.disabled = true;
-
         try {
             const res = await fetch(WEB_APP_URL).then(r => r.json());
             dernierStockRecupere = res.stocksRestants[magasinActif] || {};
@@ -276,12 +263,9 @@
                     mettreAJourStockLigne(cat, p);
                 });
             });
-
-            if (infoStatut) infoStatut.innerText = "Le stock disponible s'affiche en direct. La quantité est limitée au stock restant.";
-            if (btnValider) btnValider.disabled = false;
+            document.getElementById('info-stock-statut').innerText = "Stock mis à jour en direct.";
         } catch (e) {
-            console.error("Erreur chargement stocks form:", e);
-            if (infoStatut) infoStatut.innerText = "Erreur de chargement des stocks. Veuillez réitérer.";
+            console.error("Erreur synchro stock:", e);
         }
     }
 
@@ -379,7 +363,7 @@
     }
 
     function ouvrirGestion() {
-        let code = prompt("Veuillez entrer le code de sécurité :");
+        let code = prompt("Code de sécurité :");
         if (code === "2014") {
             document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
             document.getElementById('gestion-screen').style.display = 'block';
@@ -402,7 +386,6 @@
         const qte = parseInt(document.getElementById('gestionQuantite').value);
 
         const produitFinal = `${cat} - ${parfum} (${parts})`;
-
         const data = {
             magasin: mag,
             nomClient: "[RÉAPPROVISIONNEMENT]",
@@ -413,14 +396,12 @@
 
         fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
         .then(() => { 
-            alert(`Succès ! +${qte} ajoutés pour ${produitFinal} à ${mag}.`); 
+            alert(`Stock mis à jour instantanément ! +${qte} ajoutés.`); 
             document.getElementById('stockForm').reset(); 
             mettreAJourParfumsGestion();
+            retourAccueil();
         })
-        .catch(error => {
-            console.error("Erreur:", error);
-            alert("Erreur lors de l'ajout du stock.");
-        });
+        .catch(error => alert("Erreur de synchronisation."));
     }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
@@ -444,30 +425,25 @@
         }
 
         if (selections.length === 0) {
-            alert("Veuillez sélectionner au moins une bûche avec une quantité supérieure à 0 !");
+            alert("Sélectionnez au moins une bûche !");
             return;
         }
-
-        const typeBucheFinal = selections.join(" + ");
 
         const data = {
             magasin: magasinActif,
             nomClient: document.getElementById('nomClient').value,
-            typeBuche: typeBucheFinal,
+            typeBuche: selections.join(" + "),
             quantite: qteTotaleGlobale,
             dateRetrait: document.getElementById('dateRetrait').value
         };
 
         fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
         .then(() => { 
-            alert("Commande enregistrée avec succès !"); 
+            alert("Commande validée et stock décompté à la minute !"); 
             document.getElementById('orderForm').reset(); 
             choisirMagasin(magasinActif); 
         })
-        .catch(error => {
-            console.error("Erreur:", error);
-            alert("Erreur lors de l'enregistrement de la commande.");
-        });
+        .catch(error => alert("Erreur lors de la validation."));
     });
 
     function genererTableauStock(stocksObj) {
@@ -507,25 +483,20 @@
         .then(res => {
             let commandesFiltrees = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
 
-            // 1. Affichage Stock Magasin
             if (document.getElementById('magasin-stock-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif] || {};
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
-            // 2. Affichage Commandes du Jour Magasin (Filtre date sécurisé avec substring)
             if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
                 let dateVouue = document.getElementById('filtreDateMagasin').value;
-                let cmdMag = commandesFiltrees.filter(c => {
-                    if (c.magasin !== magasinActif || !c.dateRetrait) return false;
-                    return String(c.dateRetrait).substring(0, 10) === dateVouue;
-                });
+                let cmdMag = commandesFiltrees.filter(c => c.magasin === magasinActif && c.dateRetrait && String(c.dateRetrait).substring(0, 10) === dateVouue);
                 
-                let html = `<h3>Retraits prévus le : ${dateVouue ? new Date(dateVouue).toLocaleDateString('fr-FR') : 'Toutes'}</h3>`;
+                let html = `<h3>Retraits prévus le : ${dateVouue}</h3>`;
                 if (cmdMag.length === 0) {
-                    html += "<p>Aucune commande à récupérer pour cette date.</p>";
+                    html += "<p>Aucune commande pour cette date.</p>";
                 } else {
-                    html += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté Globale</th></tr>";
+                    html += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
                     cmdMag.forEach(row => {
                         html += `<tr><td><b>${row.nomClient}</b></td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
                     });
@@ -534,7 +505,6 @@
                 document.getElementById('commandes-jour-magasin-content').innerHTML = html;
             }
 
-            // 3. Affichage Stock Labo
             if (document.getElementById('labo-stock-screen').style.display === 'block') {
                 let stocksRestants = res.stocksRestants || {};
                 let htmlStock = "";
@@ -545,7 +515,6 @@
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
             }
 
-            // 4. Affichage Commandes Labo Globales
             if (document.getElementById('labo-orders-screen').style.display === 'block') {
                 let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetrait) - new Date(b.dateRetrait));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
@@ -559,8 +528,7 @@
                     } else {
                         htmlCommandes += "<table><tr><th>Date</th><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
                         cmd.forEach(row => {
-                            let datePropre = row.dateRetrait ? new Date(row.dateRetrait).toLocaleDateString('fr-FR') : "N/A";
-                            htmlCommandes += `<tr><td><b>${datePropre}</b></td><td>${row.nomClient}</td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
+                            htmlCommandes += `<tr><td><b>${row.dateRetrait}</b></td><td>${row.nomClient}</td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
                         });
                         htmlCommandes += "</table>";
                     }
@@ -568,21 +536,16 @@
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
 
-            // 5. Expéditions Labo (Filtre date sécurisé avec substring)
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
                 let dateVouue = document.getElementById('filtreDateLabo').value;
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
-                let htmlExp = `<h3>Expéditions prévues le : ${dateVouue ? new Date(dateVouue).toLocaleDateString('fr-FR') : ''}</h3>`;
+                let htmlExp = `<h3>Expéditions prévues le : ${dateVouue}</h3>`;
 
                 magasins.forEach(m => {
-                    let cmdMag = commandesFiltrees.filter(c => {
-                        if (c.magasin !== m || !c.dateRetrait) return false;
-                        return String(c.dateRetrait).substring(0, 10) === dateVouue;
-                    });
-                    
+                    let cmdMag = commandesFiltrees.filter(c => c.magasin === m && c.dateRetrait && String(c.dateRetrait).substring(0, 10) === dateVouue);
                     htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
                     if (cmdMag.length === 0) {
-                        htmlExp += "<p>Aucune expédition prévue pour ce magasin à cette date.</p>";
+                        htmlExp += "<p>Aucune expédition à cette date.</p>";
                     } else {
                         htmlExp += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
                         cmdMag.forEach(row => {
@@ -594,7 +557,7 @@
                 document.getElementById('expeditions-labo-content').innerHTML = htmlExp;
             }
         })
-        .catch(error => console.error("Erreur de chargement:", error));
+        .catch(error => console.error("Erreur chargement:", error));
     }
 </script>
 </body>
