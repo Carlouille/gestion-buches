@@ -277,6 +277,7 @@
         if (!selectParts || !inputQte || !indicator) return;
 
         let partVal = selectParts.value;
+        // Format strict généré : "Glacée - Marron (4 parts)"
         let cle = `${cat} - ${parfum} (${partVal})`;
         let qteDispo = dernierStockRecupere[cle] !== undefined ? dernierStockRecupere[cle] : 20;
 
@@ -417,6 +418,7 @@
                 if (qteInput && partsSelect) {
                     let qte = parseInt(qteInput.value) || 0;
                     if (qte > 0) {
+                        // Format généré rigoureusement : "1x Glacée - Marron (4 parts)"
                         selections.push(`${qte}x ${cat} - ${p} (${partsSelect.value})`);
                         qteTotaleGlobale += qte;
                     }
