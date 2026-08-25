@@ -485,11 +485,10 @@ function chargerDonnees() {
         .then(res => {
             let commandesFiltrees = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
 
-            // Normalisation des dates de toutes les commandes reçues pour éviter tout bug d'affichage ou de filtre
+            // Normalisation des dates
             commandesFiltrees.forEach(c => {
                 if (c.dateRetrait) {
                     let dStr = String(c.dateRetrait).trim();
-                    // Si la date contient "GMT" ou un format long de type Date JavaScript
                     if (dStr.includes('GMT') || dStr.includes('UTC') || dStr.length > 10) {
                         let dObj = new Date(dStr);
                         if (!isNaN(dObj.getTime())) {
@@ -515,35 +514,58 @@ function chargerDonnees() {
                 }
             });
 
+            // Fonction utilitaire pour éclater "1x Glacée - Marron (8 parts) + 1x Vanille..." en lignes propres
+            function creerLignesTableau(commandesList, inclureDate = false) {
+                if (commandesList.length === 0) return "<p>Aucune commande.</p>";
+                
+                let html = "<table><tr>";
+                if (inclureDate) html += "<th>Date</th>";
+                html += "<th>Client</th><th>Produit commandé</th><th>Qté</th></tr>";
+
+                commandesList.forEach(row => {
+                    let elements = row.typeBuche.split("+");
+                    elements.forEach((el, index) => {
+                        el = el.trim();
+                        // Extraction de la quantité et du nom du produit
+                        let match = el.match(/^(\d+)x\s*(.+)$/);
+                        let qteProd = match ? match[1] : "";
+                        let nomProd = match ? match[2] : el;
+
+                        html += "<tr>";
+                        // On n'affiche le client et la date que sur la première ligne de sa commande pour éviter les doublons visuels
+                        if (inclureDate) {
+                            let dP = row.dateRetraitFormatee.split('-');
+                            let dAff = dP.length === 3 ? `${dP[2]}/${dP[1]}/${dP[0]}` : row.dateRetraitFormatee;
+                            html += `<td>${index === 0 ? `<b>${dAff}</b>` : ""}</td>`;
+                        }
+                        html += `<td>${index === 0 ? `<b>${row.nomClient}</b>` : ""}</td>`;
+                        html += `<td>${nomProd}</td>`;
+                        html += `<td><b>${qteProd}</b></td>`;
+                        html += "</tr>";
+                    });
+                });
+                html += "</table>";
+                return html;
+            }
+
             if (document.getElementById('magasin-stock-screen').style.display === 'block') {
                 let stocks = res.stocksRestants[magasinActif] || {};
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
+            // Commandes du jour Magasin
             if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
-                let dateInputVal = document.getElementById('filtreDateMagasin').value; // Format AAAA-MM-JJ
-                
+                let dateInputVal = document.getElementById('filtreDateMagasin').value;
                 let cmdMag = commandesFiltrees.filter(c => {
                     if (!c.magasin) return false;
-                    let magFichier = String(c.magasin).trim();
-                    let magActif = String(magasinActif).trim();
-                    return magFichier === magActif && c.dateRetraitFormatee === dateInputVal;
+                    return String(c.magasin).trim() === String(magasinActif).trim() && c.dateRetraitFormatee === dateInputVal;
                 });
                 
-                // Affichage propre de la date au format français (JJ/MM/AAAA) pour l'utilisateur
                 let dateParts = dateInputVal.split('-');
                 let dateLisible = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : dateInputVal;
 
                 let html = `<h3>Retraits prévus le : ${dateLisible}</h3>`;
-                if (cmdMag.length === 0) {
-                    html += "<p>Aucune commande trouvée pour cette date.</p>";
-                } else {
-                    html += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
-                    cmdMag.forEach(row => {
-                        html += `<tr><td><b>${row.nomClient}</b></td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
-                    });
-                    html += "</table>";
-                }
+                html += creerLignesTableau(cmdMag, false);
                 document.getElementById('commandes-jour-magasin-content').innerHTML = html;
             }
 
@@ -557,6 +579,7 @@ function chargerDonnees() {
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
             }
 
+            // Commandes Globales Labo
             if (document.getElementById('labo-orders-screen').style.display === 'block') {
                 let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetraitFormatee) - new Date(b.dateRetraitFormatee));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
@@ -565,21 +588,12 @@ function chargerDonnees() {
                 magasins.forEach(m => {
                     htmlCommandes += `<h4>📍 Boutique : ${m}</h4>`;
                     let cmd = commandes.filter(c => String(c.magasin).trim() === m);
-                    if (cmd.length === 0) {
-                        htmlCommandes += "<p>Aucune commande.</p>";
-                    } else {
-                        htmlCommandes += "<table><tr><th>Date</th><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
-                        cmd.forEach(row => {
-                            let dP = row.dateRetraitFormatee.split('-');
-                            let dAff = dP.length === 3 ? `${dP[2]}/${dP[1]}/${dP[0]}` : row.dateRetraitFormatee;
-                            htmlCommandes += `<tr><td><b>${dAff}</b></td><td>${row.nomClient}</td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
-                        });
-                        htmlCommandes += "</table>";
-                    }
+                    htmlCommandes += creerLignesTableau(cmd, true);
                 });
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
 
+            // Expéditions Labo
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
                 let dateInputVal = document.getElementById('filtreDateLabo').value;
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
@@ -595,15 +609,7 @@ function chargerDonnees() {
                     });
                     
                     htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
-                    if (cmdMag.length === 0) {
-                        htmlExp += "<p>Aucune expédition à cette date.</p>";
-                    } else {
-                        htmlExp += "<table><tr><th>Client</th><th>Bûche & Parfums</th><th>Qté</th></tr>";
-                        cmdMag.forEach(row => {
-                            htmlExp += `<tr><td><b>${row.nomClient}</b></td><td>${row.typeBuche}</td><td><b>${row.quantite}</b></td></tr>`;
-                        });
-                        htmlExp += "</table>";
-                    }
+                    htmlExp += creerLignesTableau(cmdMag, false);
                 });
                 document.getElementById('expeditions-labo-content').innerHTML = htmlExp;
             }
