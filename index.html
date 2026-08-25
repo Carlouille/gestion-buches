@@ -30,12 +30,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
         th { background: #f2f2f2; }
-        .sub-group { background: #f9f9f9; padding: 12px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 15px; }
-        .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-        .item-row span { flex: 2; font-size: 14px; }
-        .item-row select { flex: 1.5; padding: 6px; }
-        .item-row input { flex: 0.8; padding: 6px; }
-        .item-row .stock-indicator { flex: 1; font-size: 12px; color: #d9534f; font-weight: bold; }
+        .sub-group { background: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 15px; }
         .stock-table th { background: #0275d8; color: white; }
         .stock-table td { text-align: center; }
         .stock-table td:first-child { text-align: left; font-weight: bold; }
@@ -46,6 +41,12 @@
         .action-card h3 { color: #0275d8; margin-top: 0; }
         .labo-action-card { background: #fffdf5; border: 2px solid #ffc107; }
         .labo-action-card h3 { color: #856404; }
+        
+        .panier-box { background: #fffdf0; border: 2px dashed #f0ad4e; padding: 15px; border-radius: 6px; margin-top: 20px; }
+        .btn-supprimer { background: #d9534f; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; width: auto; font-size: 12px; }
+        .btn-supprimer:hover { background: #c9302c; }
+        .btn-ajout-panier { background: #0275d8; }
+        .btn-ajout-panier:hover { background: #025aa5; }
     </style>
 </head>
 <body>
@@ -134,16 +135,47 @@
                 <input type="text" id="nomClient" required>
             </div>
 
-            <p style="font-size: 13px; color: #666; font-style: italic;" id="info-stock-statut">Vérification des stocks en temps réel...</p>
+            <div class="sub-group">
+                <h4>Ajouter des bûches au panier :</h4>
+                <div class="form-group">
+                    <label>Catégorie :</label>
+                    <select id="selCategorie" onchange="mettreAJourParfumsCommande()">
+                        <option value="Glacée">Bûche Glacée</option>
+                        <option value="Tradition">Tradition au Beurre</option>
+                        <option value="Omelette">Omelette Norvégienne</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Parfum :</label>
+                    <select id="selParfum"></select>
+                </div>
+                <div class="form-group">
+                    <label>Nombre de parts :</label>
+                    <select id="selParts">
+                        <option value="4 parts">4 parts</option>
+                        <option value="6 parts">6 parts</option>
+                        <option value="8 parts">8 parts</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantité :</label>
+                    <input type="number" id="selQuantite" value="1" min="1">
+                </div>
+                <button type="button" class="btn-ajout-panier" onclick="ajouterAuPanier()">➕ Ajouter à la commande du client</button>
+            </div>
 
-            <div id="form-items-container"></div>
+            <!-- Panier / Récapitulatif -->
+            <div class="panier-box">
+                <h4>🛒 Panier de la commande en cours :</h4>
+                <div id="panier-contenu"><p style="color:#777; font-style:italic;">Aucun produit ajouté pour l'instant.</p></div>
+            </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-top: 20px;">
                 <label>Date de retrait :</label>
                 <input type="date" id="dateRetrait" required>
             </div>
 
-            <button type="submit" id="btn-valider-commande">Valider la commande</button>
+            <button type="submit" id="btn-valider-commande" style="background:#5cb85c;">Valider et enregistrer la commande</button>
         </form>
     </div>
 
@@ -215,9 +247,9 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec"; 
+    const WEB_APP_URL = "VOTRE_WEB_APP_URL_ICI"; 
     let magasinActif = "";
-    let dernierStockRecupere = {};
+    let panierActuel = []; // Tableau qui stocke les articles ajoutés au panier
 
     const parfumsParCategorie = {
         "Glacée": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
@@ -225,68 +257,60 @@
         "Omelette": ["Vanille", "Rhum Raisin"]
     };
 
-    function initialiserChampsCommande() {
-        let container = document.getElementById('form-items-container');
-        container.innerHTML = "";
+    function mettreAJourParfumsCommande() {
+        const catSelect = document.getElementById('selCategorie').value;
+        const parfumSelect = document.getElementById('selParfum');
+        parfumSelect.innerHTML = "";
         
-        for (let [cat, parfums] of Object.entries(parfumsParCategorie)) {
-            let sub = document.createElement('div');
-            sub.className = "sub-group";
-            sub.innerHTML = `<label>${cat === 'Glacée' ? '❄️ Bûches Glacées' : (cat === 'Tradition' ? '🧈 Bûches Traditionnelles au Beurre' : '🔥 Omelettes Norvégiennes')}</label>`;
-            
-            parfums.forEach(p => {
-                let div = document.createElement('div');
-                div.className = "item-row";
-                div.innerHTML = `
-                    <span><b>${p}</b></span>
-                    <select id="parts_${cat}_${p}" onchange="mettreAJourStockLigne('${cat}', '${p}')">
-                        <option value="4 parts">4 parts</option>
-                        <option value="6 parts">6 parts</option>
-                        <option value="8 parts">8 parts</option>
-                    </select>
-                    <input type="number" id="qte_${cat}_${p}" value="0" min="0" max="0" placeholder="Qté">
-                    <span class="stock-indicator" id="stock_${cat}_${p}">(Dispo: 0)</span>
-                `;
-                sub.appendChild(div);
+        if (parfumsParCategorie[catSelect]) {
+            parfumsParCategorie[catSelect].forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                parfumSelect.appendChild(opt);
             });
-            container.appendChild(sub);
         }
     }
 
-    async function rafraichirStocksFormulaire() {
-        try {
-            const res = await fetch(WEB_APP_URL).then(r => r.json());
-            dernierStockRecupere = res.stocksRestants[magasinActif] || {};
-            
-            Object.entries(parfumsParCategorie).forEach(([cat, parfums]) => {
-                parfums.forEach(p => {
-                    mettreAJourStockLigne(cat, p);
-                });
-            });
-            document.getElementById('info-stock-statut').innerText = "Stock mis à jour en direct.";
-        } catch (e) {
-            console.error("Erreur synchro stock:", e);
+    function ajouterAuPanier() {
+        let cat = document.getElementById('selCategorie').value;
+        let parfum = document.getElementById('selParfum').value;
+        let parts = document.getElementById('selParts').value;
+        let quantite = parseInt(document.getElementById('selQuantite').value) || 1;
+
+        if (quantite <= 0) {
+            alert("Veuillez indiquer une quantité valide.");
+            return;
         }
+
+        // Ajout au panier en mémoire
+        panierActuel.push({ cat, parfum, parts, quantite });
+        afficherPanier();
     }
 
-    function mettreAJourStockLigne(cat, parfum) {
-        let selectParts = document.getElementById(`parts_${cat}_${parfum}`);
-        let inputQte = document.getElementById(`qte_${cat}_${parfum}`);
-        let indicator = document.getElementById(`stock_${cat}_${parfum}`);
+    function supprimerDuPanier(index) {
+        panierActuel.splice(index, 1);
+        afficherPanier();
+    }
 
-        if (!selectParts || !inputQte || !indicator) return;
-
-        let partVal = selectParts.value;
-        // Format strict généré : "Glacée - Marron (4 parts)"
-        let cle = `${cat} - ${parfum} (${partVal})`;
-        let qteDispo = dernierStockRecupere[cle] !== undefined ? dernierStockRecupere[cle] : 20;
-
-        indicator.innerText = `(Dispo: ${qteDispo})`;
-        inputQte.setAttribute("max", qteDispo);
-        
-        if (parseInt(inputQte.value) > qteDispo) {
-            inputQte.value = qteDispo;
+    function afficherPanier() {
+        let container = document.getElementById('panier-contenu');
+        if (panierActuel.length === 0) {
+            container.innerHTML = `<p style="color:#777; font-style:italic;">Aucun produit ajouté pour l'instant.</p>`;
+            return;
         }
+
+        let html = "<table><tr><th>Produit</th><th>Parts</th><th>Qté</th><th>Action</th></tr>";
+        panierActuel.forEach((item, index) => {
+            html += `<tr>
+                <td><b>${item.cat} - ${item.parfum}</b></td>
+                <td>${item.parts}</td>
+                <td><b>${item.quantite}</b></td>
+                <td><button type="button" class="btn-supprimer" onclick="supprimerDuPanier(${index})">❌ Supprimer</button></td>
+            </tr>`;
+        });
+        html += "</table>";
+        container.innerHTML = html;
     }
 
     function mettreAJourParfumsGestion() {
@@ -306,6 +330,7 @@
 
     window.onload = function() {
         mettreAJourParfumsGestion();
+        mettreAJourParfumsCommande();
         let aujourdhui = new Date().toISOString().split('T')[0];
         document.getElementById('filtreDateMagasin').value = aujourdhui;
         document.getElementById('filtreDateLabo').value = aujourdhui;
@@ -330,8 +355,10 @@
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('magasin-order-screen').style.display = 'block';
         document.getElementById('titre-commande-magasin').innerText = "📝 Passer une commande - " + magasinActif;
-        initialiserChampsCommande();
-        rafraichirStocksFormulaire();
+        panierActuel = [];
+        afficherPanier();
+        document.getElementById('orderForm').reset();
+        mettreAJourParfumsCommande();
     }
 
     function ouvrirCommandesJourMagasin() {
@@ -405,31 +432,23 @@
         .catch(error => alert("Erreur de synchronisation."));
     }
 
+    // Validation finale de la commande multi-produits
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
+
+        if (panierActuel.length === 0) {
+            alert("Votre panier est vide ! Ajoutez au moins une bûche.");
+            return;
+        }
 
         let selections = [];
         let qteTotaleGlobale = 0;
 
-        for (let [cat, parfums] of Object.entries(parfumsParCategorie)) {
-            parfums.forEach(p => {
-                let qteInput = document.getElementById(`qte_${cat}_${p}`);
-                let partsSelect = document.getElementById(`parts_${cat}_${p}`);
-                if (qteInput && partsSelect) {
-                    let qte = parseInt(qteInput.value) || 0;
-                    if (qte > 0) {
-                        // Format généré rigoureusement : "1x Glacée - Marron (4 parts)"
-                        selections.push(`${qte}x ${cat} - ${p} (${partsSelect.value})`);
-                        qteTotaleGlobale += qte;
-                    }
-                }
-            });
-        }
-
-        if (selections.length === 0) {
-            alert("Sélectionnez au moins une bûche !");
-            return;
-        }
+        panierActuel.forEach(item => {
+            // Format strictement reconnu par le script Google Sheets : "1x Glacée - Marron (4 parts)"
+            selections.push(`${item.quantite}x ${item.cat} - ${item.parfum} (${item.parts})`);
+            qteTotaleGlobale += item.quantite;
+        });
 
         const data = {
             magasin: magasinActif,
@@ -441,8 +460,7 @@
 
         fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
         .then(() => { 
-            alert("Commande validée et stock décompté à la minute !"); 
-            document.getElementById('orderForm').reset(); 
+            alert("Commande validée et stock décompté avec succès !"); 
             choisirMagasin(magasinActif); 
         })
         .catch(error => alert("Erreur lors de la validation."));
@@ -479,13 +497,12 @@
         return html;
     }
 
-function chargerDonnees() {
+    function chargerDonnees() {
         fetch(WEB_APP_URL)
         .then(res => res.json())
         .then(res => {
             let commandesFiltrees = res.commandes.filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
 
-            // Normalisation des dates
             commandesFiltrees.forEach(c => {
                 if (c.dateRetrait) {
                     let dStr = String(c.dateRetrait).trim();
@@ -514,7 +531,6 @@ function chargerDonnees() {
                 }
             });
 
-            // Fonction utilitaire pour éclater "1x Glacée - Marron (8 parts) + 1x Vanille..." en lignes propres
             function creerLignesTableau(commandesList, inclureDate = false) {
                 if (commandesList.length === 0) return "<p>Aucune commande.</p>";
                 
@@ -526,13 +542,11 @@ function chargerDonnees() {
                     let elements = row.typeBuche.split("+");
                     elements.forEach((el, index) => {
                         el = el.trim();
-                        // Extraction de la quantité et du nom du produit
                         let match = el.match(/^(\d+)x\s*(.+)$/);
                         let qteProd = match ? match[1] : "";
                         let nomProd = match ? match[2] : el;
 
                         html += "<tr>";
-                        // On n'affiche le client et la date que sur la première ligne de sa commande pour éviter les doublons visuels
                         if (inclureDate) {
                             let dP = row.dateRetraitFormatee.split('-');
                             let dAff = dP.length === 3 ? `${dP[2]}/${dP[1]}/${dP[0]}` : row.dateRetraitFormatee;
@@ -553,7 +567,6 @@ function chargerDonnees() {
                 document.getElementById('stock-magasin-content').innerHTML = genererTableauStock(stocks);
             }
 
-            // Commandes du jour Magasin
             if (document.getElementById('magasin-commandes-jour-screen').style.display === 'block') {
                 let dateInputVal = document.getElementById('filtreDateMagasin').value;
                 let cmdMag = commandesFiltrees.filter(c => {
@@ -579,7 +592,6 @@ function chargerDonnees() {
                 document.getElementById('stock-global-content').innerHTML = htmlStock;
             }
 
-            // Commandes Globales Labo
             if (document.getElementById('labo-orders-screen').style.display === 'block') {
                 let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetraitFormatee) - new Date(b.dateRetraitFormatee));
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
@@ -593,7 +605,6 @@ function chargerDonnees() {
                 document.getElementById('recap-par-magasin').innerHTML = htmlCommandes;
             }
 
-            // Expéditions Labo
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
                 let dateInputVal = document.getElementById('filtreDateLabo').value;
                 let magasins = ["Toulon", "Carqueiranne", "Hyères"];
