@@ -17,6 +17,8 @@
         button { background: #5cb85c; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; }
         button:hover { background: #4cae4c; }
         .back-btn { background: #6c757d; margin-bottom: 20px; width: auto; padding: 8px 15px; color: white; text-decoration: none; display: inline-block; border-radius: 4px; cursor: pointer;}
+        .print-btn { background: #0275d8; width: auto; padding: 10px 20px; color: white; border-radius: 4px; cursor: pointer; margin-bottom: 15px; display: inline-block; }
+        .print-btn:hover { background: #025eab; }
         
         #home-screen { display: block; text-align: center; padding: 20px; }
         .menu-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
@@ -47,6 +49,19 @@
         .order-input-table td:first-child { text-align: left; font-weight: bold; }
         .stock-badge { font-size: 12px; color: #d9534f; display: block; margin-top: 2px; }
         .phone-text { font-size: 13px; color: #0275d8; display: block; margin-top: 3px; font-weight: bold; }
+        .badge-magasin { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #475569; display: inline-block; margin-bottom: 3px; }
+
+        /* STYLE IMPRESSION / PDF */
+        @media print {
+            body { background: white; padding: 0; color: black; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            .back-btn, .print-btn, #home-screen, #magasin-menu-screen, #labo-menu-screen, .form-group { display: none !important; }
+            .view { display: none !important; }
+            .printable-section { display: block !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th { background: #eee !important; color: black !important; -webkit-print-color-adjust: exact; }
+        }
     </style>
 </head>
 <body>
@@ -99,9 +114,13 @@
                 <h3>📋 Commandes Globales</h3>
                 <p>Toutes les commandes par boutique</p>
             </div>
+            <div class="action-card labo-action-card" onclick="ouvrirCommandesParDateLabo()">
+                <h3>📅 Commandes Jour par Jour</h3>
+                <p>Classement global par date de retrait (Idéal PDF)</p>
+            </div>
             <div class="action-card labo-action-card" onclick="ouvrirExpeditionsLabo()">
-                <h3>🚚 Expéditions Jour par Jour</h3>
-                <p>Détail des envois à préparer par date</p>
+                <h3>🚚 Expéditions par Magasin</h3>
+                <p>Détail par date et par boutique</p>
             </div>
         </div>
     </div>
@@ -121,10 +140,13 @@
             <label>Sélectionner la date de retrait :</label>
             <input type="date" id="filtreDateMagasin" onchange="chargerDonnees()">
         </div>
-        <div id="commandes-jour-magasin-content">Chargement...</div>
+        <div class="printable-section">
+            <button class="print-btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+            <div id="commandes-jour-magasin-content">Chargement...</div>
+        </div>
     </div>
 
-    <!-- Passer Commande avec Grille de Stock en direct -->
+    <!-- Passer Commande -->
     <div id="magasin-order-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-commande-magasin">📝 Passer une commande</h2>
@@ -135,7 +157,6 @@
                 <input type="text" id="nomClient" required style="width: 100%;">
             </div>
 
-            <!-- CHAMP TÉLÉPHONE -->
             <div class="form-group">
                 <label>Numéro de téléphone :</label>
                 <input type="tel" id="telephoneClient" required placeholder="Ex: 06 12 34 56 78" style="width: 100%;">
@@ -166,7 +187,21 @@
     <div id="labo-orders-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📋 Commandes par magasin</h2>
-        <div id="recap-par-magasin">Chargement...</div>
+        <div class="printable-section">
+            <button class="print-btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+            <div id="recap-par-magasin">Chargement...</div>
+        </div>
+    </div>
+
+    <!-- Commandes Jour par Jour Labo (NOUVELLE VUE) -->
+    <div id="labo-commandes-par-date-screen" class="view">
+        <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
+        <h2>📅 Commandes Classées Jour par Jour (Toutes boutiques)</h2>
+        <p style="color: #666; font-size: 14px;">Votre père peut imprimer ou télécharger en PDF l'ensemble des commandes de chaque jour en un seul clic.</p>
+        <div class="printable-section">
+            <button class="print-btn" onclick="window.print()">🖨️ Tout Imprimer / Enregistrer en PDF</button>
+            <div id="commandes-par-date-content">Chargement...</div>
+        </div>
     </div>
 
     <!-- Expéditions Labo -->
@@ -177,7 +212,10 @@
             <label>Sélectionner la date d'expédition / retrait :</label>
             <input type="date" id="filtreDateLabo" onchange="chargerDonnees()">
         </div>
-        <div id="expeditions-labo-content">Chargement...</div>
+        <div class="printable-section">
+            <button class="print-btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+            <div id="expeditions-labo-content">Chargement...</div>
+        </div>
     </div>
 
     <!-- Gestion / Réassort -->
@@ -226,6 +264,7 @@
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby08yDDu7ZGAgpA6Um3cXqtd1adSTuhyodK4aevtY5YGle-J6MrAMs-J4uqOp44tojclw/exec"; 
     let magasinActif = "";
     let dernierStockActuel = {}; 
+    let nombreCommandesPrecedent = 0; // Pour détecter les nouvelles commandes
 
     const parfumsParCategorie = {
         "Glacée": ["Marron", "Vanille", "Chocolat", "Mangue", "Passion", "Framboise"],
@@ -254,6 +293,9 @@
         document.getElementById('filtreDateMagasin').value = aujourdhui;
         document.getElementById('filtreDateLabo').value = aujourdhui;
         document.getElementById('home-screen').style.display = 'block';
+        
+        // Vérification automatique des nouvelles commandes toutes les 15 secondes en arrière-plan
+        setInterval(verifierNouvellesCommandesSilencieuse, 15000);
     };
 
     function choisirMagasin(nom) {
@@ -301,6 +343,12 @@
         chargerDonnees();
     }
 
+    function ouvrirCommandesParDateLabo() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('labo-commandes-par-date-screen').style.display = 'block';
+        chargerDonnees();
+    }
+
     function ouvrirExpeditionsLabo() {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('labo-expeditions-screen').style.display = 'block';
@@ -320,6 +368,23 @@
     function retourAccueil() {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.getElementById('home-screen').style.display = 'block';
+    }
+
+    function verifierNouvellesCommandesSilencieuse() {
+        fetch(WEB_APP_URL, { mode: 'cors', redirect: 'follow' })
+        .then(res => res.json())
+        .then(res => {
+            let commandesFiltrees = (res.commandes || []).filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
+            if (nombreCommandesPrecedent > 0 && commandesFiltrees.length > nombreCommandesPrecedent) {
+                // Alerte visuelle / sonore discrète pour le papa
+                document.title = "🚨 NOUVELLE COMMANDE ! 🎄";
+                if (confirm("🔔 Une nouvelle commande vient d'arriver en boutique !\n\nVoulez-vous actualiser l'affichage pour la voir ?")) {
+                    location.reload();
+                }
+            }
+            nombreCommandesPrecedent = commandesFiltrees.length;
+        })
+        .catch(err => console.log("Vérification arrière-plan silencieuse"));
     }
 
     function ajouterStockEnGros(e) {
@@ -529,12 +594,12 @@
                 }
             });
 
-            function creerLignesTableau(commandesList, inclureDate = false) {
+            nombreCommandesPrecedent = commandesFiltrees.length;
+
+            function creerLignesTableau(commandesList, afficherMagasin = false) {
                 if (commandesList.length === 0) return "<p>Aucune commande.</p>";
                 
-                let html = "<table><tr>";
-                if (inclureDate) html += "<th>Date</th>";
-                html += "<th>Client & Téléphone</th><th>Produit commandé</th><th>Qté</th></tr>";
+                let html = "<table><tr><th>Boutique</th><th>Client & Téléphone</th><th>Produit commandé</th><th>Qté</th></tr>";
 
                 commandesList.forEach(row => {
                     let elements = row.typeBuche.split("+");
@@ -545,13 +610,8 @@
                         let nomProd = match ? match[2] : el;
 
                         html += "<tr>";
-                        if (inclureDate) {
-                            let dP = row.dateRetraitFormatee.split('-');
-                            let dAff = dP.length === 3 ? `${dP[2]}/${dP[1]}/${dP[0]}` : row.dateRetraitFormatee;
-                            html += `<td>${index === 0 ? `<b>${dAff}</b>` : ""}</td>`;
-                        }
+                        html += `<td>${index === 0 ? `<span class="badge-magasin">${row.magasin}</span>` : ""}</td>`;
                         
-                        // Affichage du nom et du téléphone du client
                         let clientInfo = `<b>${row.nomClient}</b>`;
                         if (row.telephoneClient) {
                             clientInfo += `<span class="phone-text">📞 ${row.telephoneClient}</span>`;
@@ -583,7 +643,7 @@
                 let dateLisible = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : dateInputVal;
 
                 let html = `<h3>Retraits prévus le : ${dateLisible}</h3>`;
-                html += creerLignesTableau(cmdMag, false);
+                html += creerLignesTableau(cmdMag);
                 document.getElementById('commandes-jour-magasin-content').innerHTML = html;
             }
 
@@ -605,10 +665,35 @@
                 magasins.forEach(m => {
                     htmlCommandes += `<h4>📍 Boutique : ${m}</h4>`;
                     let cmd = commandes.filter(c => String(c.magasin).trim() === m);
-                    htmlCommandes += creerLignesTableau(cmd, true);
+                    htmlCommandes += creerLignesTableau(cmd);
                 });
                 let recapDiv = document.getElementById('recap-par-magasin');
                 if (recapDiv) recapDiv.innerHTML = htmlCommandes;
+            }
+
+            // NOUVELLE VUE : Commandes regroupées par date pour le Labo
+            if (document.getElementById('labo-commandes-par-date-screen').style.display === 'block') {
+                let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetraitFormatee) - new Date(b.dateRetraitFormatee));
+                
+                // Récupérer toutes les dates uniques de retrait présentes dans les commandes
+                let datesUniques = [...new Set(commandes.map(c => c.dateRetraitFormatee))].filter(Boolean);
+                
+                let htmlParDate = "";
+                if (datesUniques.length === 0) {
+                    htmlParDate = "<p>Aucune commande enregistrée pour le moment.</p>";
+                } else {
+                    datesUniques.forEach(dateVal => {
+                        let dParts = dateVal.split('-');
+                        let dateLisible = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}/${dParts[0]}` : dateVal;
+                        
+                        let cmdsDuJour = commandes.filter(c => c.dateRetraitFormatee === dateVal);
+                        
+                        htmlByDate = `<h3>📅 Retraits du : ${dateLisible} (${cmdsDuJour.length} commandes)</h3>`;
+                        htmlParDate += `<h3>📅 Retraits du : ${dateLisible}</h3>`;
+                        htmlParDate += creerLignesTableau(cmdsDuJour);
+                    });
+                }
+                document.getElementById('commandes-par-date-content').innerHTML = htmlParDate;
             }
 
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
@@ -626,7 +711,7 @@
                     });
                     
                     htmlExp += `<h4>📍 Boutique : ${m}</h4>`;
-                    htmlExp += creerLignesTableau(cmdMag, false);
+                    htmlExp += creerLignesTableau(cmdMag);
                 });
                 document.getElementById('expeditions-labo-content').innerHTML = htmlExp;
             }
