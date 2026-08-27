@@ -53,16 +53,17 @@
         
         .single-order-card { background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-        /* STYLE IMPRESSION / PDF INDIVIDUEL */
+        /* STYLE IMPRESSION / PDF INDIVIDUEL CORRIGÉ */
         @media print {
             body { background: white; padding: 0; color: black; }
-            .container { box-shadow: none; padding: 0; max-width: 100%; }
-            .back-btn, .print-btn, #home-screen, #magasin-menu-screen, #labo-menu-screen, .form-group, h2, p { display: none !important; }
+            .container > h1, .back-btn, .print-btn, #home-screen, #magasin-menu-screen, #labo-menu-screen, .form-group, h2, p { display: none !important; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; margin: 0; }
             .view { display: none !important; }
-            .printable-section { display: block !important; }
+            /* On affiche uniquement la vue active contenant la carte ciblée */
+            .view[style*="display: block"] { display: block !important; }
             .single-order-card { display: none !important; border: none; padding: 0; margin: 0; box-shadow: none; }
-            .single-order-card.printing-active { display: block !important; }
-            table { page-break-inside: auto; }
+            .single-order-card.printing-active { display: block !important; border: 2px solid #333 !important; padding: 20px !important; border-radius: 8px !important; }
+            table { page-break-inside: auto; width: 100% !important; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             th { background: #eee !important; color: black !important; -webkit-print-color-adjust: exact; }
         }
@@ -680,7 +681,6 @@
                 if (recapDiv) recapDiv.innerHTML = htmlCommandes;
             }
 
-            // VUE LABO : Commandes par date avec un bouton PDF pour CHAQUE client individuellement
             if (document.getElementById('labo-commandes-par-date-screen').style.display === 'block') {
                 let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetraitFormatee) - new Date(b.dateRetraitFormatee));
                 let datesUniques = [...new Set(commandes.map(c => c.dateRetraitFormatee))].filter(Boolean);
