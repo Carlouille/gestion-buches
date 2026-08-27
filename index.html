@@ -46,6 +46,7 @@
         .order-input-table td { text-align: center; vertical-align: middle; }
         .order-input-table td:first-child { text-align: left; font-weight: bold; }
         .stock-badge { font-size: 12px; color: #d9534f; display: block; margin-top: 2px; }
+        .phone-text { font-size: 13px; color: #0275d8; display: block; margin-top: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -132,6 +133,12 @@
             <div class="form-group">
                 <label>Nom du client :</label>
                 <input type="text" id="nomClient" required style="width: 100%;">
+            </div>
+
+            <!-- CHAMP TÉLÉPHONE -->
+            <div class="form-group">
+                <label>Numéro de téléphone :</label>
+                <input type="tel" id="telephoneClient" required placeholder="Ex: 06 12 34 56 78" style="width: 100%;">
             </div>
 
             <div class="sub-group">
@@ -327,6 +334,7 @@
         const data = {
             magasin: mag,
             nomClient: "[RÉAPPROVISIONNEMENT]",
+            telephoneClient: "",
             typeBuche: produitFinal,
             quantite: qte,
             dateRetrait: new Date().toISOString().split('T')[0]
@@ -437,6 +445,7 @@
         const data = {
             magasin: magasinActif,
             nomClient: document.getElementById('nomClient').value,
+            telephoneClient: document.getElementById('telephoneClient').value,
             typeBuche: selections.join(" + "),
             quantite: qteTotaleGlobale,
             dateRetrait: document.getElementById('dateRetrait').value
@@ -525,7 +534,7 @@
                 
                 let html = "<table><tr>";
                 if (inclureDate) html += "<th>Date</th>";
-                html += "<th>Client</th><th>Produit commandé</th><th>Qté</th></tr>";
+                html += "<th>Client & Téléphone</th><th>Produit commandé</th><th>Qté</th></tr>";
 
                 commandesList.forEach(row => {
                     let elements = row.typeBuche.split("+");
@@ -541,7 +550,14 @@
                             let dAff = dP.length === 3 ? `${dP[2]}/${dP[1]}/${dP[0]}` : row.dateRetraitFormatee;
                             html += `<td>${index === 0 ? `<b>${dAff}</b>` : ""}</td>`;
                         }
-                        html += `<td>${index === 0 ? `<b>${row.nomClient}</b>` : ""}</td>`;
+                        
+                        // Affichage du nom et du téléphone du client
+                        let clientInfo = `<b>${row.nomClient}</b>`;
+                        if (row.telephoneClient) {
+                            clientInfo += `<span class="phone-text">📞 ${row.telephoneClient}</span>`;
+                        }
+
+                        html += `<td>${index === 0 ? clientInfo : ""}</td>`;
                         html += `<td>${nomProd}</td>`;
                         html += `<td><b>${qteProd}</b></td>`;
                         html += "</tr>";
