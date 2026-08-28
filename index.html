@@ -58,47 +58,154 @@
         .card-carqueiranne { border-left: 6px solid #5cb85c; background: #dff0d8; }
         .card-hyeres { border-left: 6px solid #f06292; background: #fce4ec; }
 
+        /* STYLE PRO POUR L'IMPRESSION DU BON DE COMMANDE */
         @media print {
-            body { background: white; padding: 0; color: black; }
+            body { background: white; padding: 0; color: #111; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
             .container > h1, .back-btn, .print-btn, #home-screen, #magasin-menu-screen, #labo-menu-screen, .form-group, h2, p { display: none !important; }
             .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; margin: 0; }
             .view { display: none !important; }
             .view[style*="display: block"] { display: block !important; }
             
             .single-order-card { display: none !important; border: none; padding: 0; margin: 0; box-shadow: none; background: white !important; }
-            .single-order-card.printing-active { display: block !important; border: 2px solid #333 !important; padding: 30px !important; border-radius: 8px !important; }
-            
+            .single-order-card.printing-active { display: block !important; border: none !important; padding: 0 !important; border-radius: 0 !important; }
             .single-order-card.printing-active .order-details-table { display: block !important; }
             
-            .pdf-header {
+            /* En-tête du Bon de Commande style professionnel */
+            .bon-header-top {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                border-bottom: 2px solid #333;
-                padding-bottom: 15px;
+                border-bottom: 3px solid #00bcd4;
+                padding-bottom: 20px;
                 margin-bottom: 25px;
             }
-            .pdf-client-info { text-align: left; }
-            .pdf-client-info h2 { margin: 0 0 5px 0; color: #000; font-size: 22px; border: none; padding: 0; }
-            .pdf-client-info p { margin: 3px 0; font-size: 16px; display: block !important; color: #333; }
-            .pdf-location-info { text-align: right; }
-            .pdf-location-info .store-badge {
-                font-size: 20px;
+            .bon-title-area h1 {
+                font-size: 32px;
+                color: #00bcd4;
+                margin: 0;
+                text-align: left;
                 font-weight: bold;
-                background: #333;
+                letter-spacing: -0.5px;
+                display: block !important;
+            }
+            .bon-logo-badge {
+                background: #ffb300;
                 color: white;
-                padding: 6px 14px;
-                border-radius: 6px;
-                display: inline-block;
-                margin-bottom: 5px;
+                font-weight: bold;
+                font-size: 18px;
+                width: 75px;
+                height: 75px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.15);
                 -webkit-print-color-adjust: exact;
             }
-            .pdf-location-info p { margin: 3px 0; font-size: 14px; display: block !important; color: #555; }
 
-            table { page-break-inside: auto; width: 100% !important; margin-top: 10px; }
-            th { background: #eee !important; color: black !important; font-size: 15px; -webkit-print-color-adjust: exact; }
-            td { font-size: 15px; padding: 10px !important; }
-            tr { page-break-inside: avoid; page-break-after: auto; }
+            .bon-infos-grid {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 30px;
+            }
+            .bon-entreprise-infos {
+                font-size: 13px;
+                color: #444;
+                line-height: 1.5;
+            }
+            .bon-entreprise-infos strong {
+                font-size: 15px;
+                color: #111;
+            }
+            
+            .bon-details-encne {
+                background: #fcfcfc;
+                border: 1px solid #eaeaea;
+                padding: 15px;
+                border-radius: 6px;
+                width: 45%;
+                font-size: 13px;
+            }
+            .bon-details-encne table {
+                margin: 0 !important;
+                border: none !important;
+            }
+            .bon-details-encne td {
+                border: none !important;
+                padding: 3px 0 !important;
+                font-size: 13px;
+            }
+
+            .bon-client-bloc {
+                width: 45%;
+                text-align: right;
+            }
+            .bon-client-bloc h3 {
+                margin: 0 0 8px 0;
+                font-size: 15px;
+                color: #111;
+                border: none;
+                padding: 0;
+            }
+            .bon-client-bloc .client-card-box {
+                background: #fafafa;
+                border: 1px solid #ddd;
+                padding: 15px;
+                border-radius: 6px;
+                text-align: left;
+            }
+            .bon-client-bloc p {
+                margin: 3px 0;
+                font-size: 14px;
+                display: block !important;
+                color: #333;
+            }
+
+            /* Tableau des articles */
+            table.bon-table-articles {
+                width: 100% !important;
+                border-collapse: collapse;
+                margin-top: 20px;
+                margin-bottom: 40px;
+            }
+            table.bon-table-articles th {
+                background: #00bcd4 !important;
+                color: white !important;
+                font-size: 13px;
+                padding: 10px !important;
+                border: 1px solid #00bcd4;
+                -webkit-print-color-adjust: exact;
+            }
+            table.bon-table-articles td {
+                font-size: 13px;
+                padding: 10px !important;
+                border: 1px solid #e0e0e0;
+            }
+
+            /* Signature */
+            .bon-signature {
+                margin-top: 30px;
+                font-size: 13px;
+                color: #555;
+            }
+
+            /* Pied de page */
+            .bon-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                border-top: 2px solid #00bcd4;
+                padding-top: 10px;
+                display: flex;
+                justify-content: space-between;
+                font-size: 10px;
+                color: #666;
+            }
+            .bon-footer div {
+                flex: 1;
+                padding: 0 10px;
+            }
         }
     </style>
 </head>
@@ -649,6 +756,9 @@
                 else if (magNom === "Carqueiranne") couleurClass = "card-carqueiranne";
                 else if (magNom === "Hyères") couleurClass = "card-hyeres";
 
+                let dateCmdFr = row.datePassationFormatee ? row.datePassationFormatee.split('-').reverse().join('/') : '';
+                let dateRetFr = row.dateRetraitFormatee ? row.dateRetraitFormatee.split('-').reverse().join('/') : '';
+
                 let html = `<div class="single-order-card ${couleurClass}" id="${uniqueId}">`;
                 
                 html += `<div>`;
@@ -659,29 +769,44 @@
                 }
                 html += `</div>`;
                 
-                html += `<button class="print-btn" onclick="imprimerSeuleCommande('${uniqueId}')">🖨️ PDF</button>`;
+                html += `<button class="print-btn" onclick="imprimerSeuleCommande('${uniqueId}')">🖨️ PDF / Imprimer</button>`;
                 
+                // STRUCTURATION DU BON DE COMMANDE STYLE PRO
                 html += `<div class="order-details-table">`;
                 
-                html += `<div class="pdf-header">`;
-                html += `<div class="pdf-client-info">`;
-                html += `<h2>${row.nomClient}</h2>`;
-                if (row.telephoneClient) {
-                    html += `<p>📞 <b>Tél :</b> ${row.telephoneClient}</p>`;
-                }
+                // En-tête du bon
+                html += `<div class="bon-header-top">`;
+                html += `<div class="bon-title-area"><h1>Bon de commande</h1></div>`;
+                html += `<div class="bon-logo-badge">Logo</div>`;
                 html += `</div>`;
+
+                // Blocs informations entreprise & client
+                html += `<div class="bon-infos-grid">`;
                 
-                html += `<div class="pdf-location-info">`;
-                html += `<span class="store-badge">📍 ${row.magasin}</span>`;
-                if (row.dateRetraitFormatee) {
-                    let partsD = row.dateRetraitFormatee.split('-');
-                    let dateFr = partsD.length === 3 ? `${partsD[2]}/${partsD[1]}/${partsD[0]}` : row.dateRetraitFormatee;
-                    html += `<p>Retrait le : <b>${dateFr}</b></p>`;
+                html += `<div class="bon-details-encne">`;
+                html += `<table>`;
+                html += `<tr><td>Date de commande :</td><td><b>${dateCmdFr}</b></td></tr>`;
+                html += `<tr><td>Boutique de retrait :</td><td><b>${row.magasin}</b></td></tr>`;
+                html += `<tr><td>Date de retrait :</td><td><b>${dateRetFr}</b></td></tr>`;
+                html += `</table>`;
+                html += `</div>`;
+
+                html += `<div class="bon-client-bloc">`;
+                html += `<h3>Destinataire / Client</h3>`;
+                html += `<div class="client-card-box">`;
+                html += `<p><b>${row.nomClient}</b></p>`;
+                if (row.telephoneClient) {
+                    html += `<p>📞 ${row.telephoneClient}</p>`;
                 }
+                html += `<p style="margin-top: 8px; font-size: 13px; color: #666;">Retrait prévu à la boutique de <b>${row.magasin}</b></p>`;
                 html += `</div>`;
                 html += `</div>`;
 
-                html += `<table><tr><th>Produit commandé</th><th style="width: 120px; text-align: center;">Quantité</th></tr>`;
+                html += `</div>`; // Fin bon-infos-grid
+
+                // Tableau des produits
+                html += `<table class="bon-table-articles">`;
+                html += `<tr><th>Description du produit</th><th style="width: 120px; text-align: center;">Quantité</th></tr>`;
 
                 let elements = row.typeBuche.split("+");
                 elements.forEach(el => {
@@ -693,8 +818,19 @@
                     html += `<tr><td>${nomProd}</td><td style="text-align: center;"><b>${qteProd}</b></td></tr>`;
                 });
 
-                html += `</table></div>`;
+                html += `</table>`;
+
+                html += `<div class="bon-signature">Signature :</div>`;
+
+                // Pied de page légal / pro
+                html += `<div class="bon-footer">`;
+                html += `<div><b>Boutique ${row.magasin}</b><br>Retrait des commandes de Noël</div>`;
+                html += `<div><b>Contact & Infos</b><br>Service client / Laboratoire</div>`;
+                html += `<div><b>Validation</b><br>Bon pour accord et retrait</div>`;
                 html += `</div>`;
+
+                html += `</div>`; // Fin order-details-table
+                html += `</div>`; // Fin single-order-card
                 return html;
             }
 
