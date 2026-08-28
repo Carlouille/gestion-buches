@@ -259,11 +259,11 @@
         <div id="commandes-par-retrait-content">Chargement...</div>
     </div>
 
-    <!-- NOUVEL ECRAN : Commandes par Date de Passation (Arrivage / Fin de journée) -->
+    <!-- ECRAN : Commandes par Date de Passation (Arrivage / Fin de journée) -->
     <div id="labo-commandes-par-passation-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📥 Commandes Passées Jour par Jour (Arrivages)</h2>
-        <p style="color: #666; font-size: 14px;">Idéal pour votre père en fin de journée : retrouvez toutes les commandes saisies le 12, puis le 13, etc., prêtes à être imprimées.</p>
+        <p style="color: #666; font-size: 14px;">Idéal pour votre père en fin de journée : retrouvez toutes les commandes saisies le jour même, prêtes à être imprimées.</p>
         <div id="commandes-par-passation-content">Chargement...</div>
     </div>
 
@@ -468,6 +468,7 @@
         const parfum = document.getElementById('gestionParfum').value;
         const parts = document.getElementById('gestionParts').value;
         const qte = parseInt(document.getElementById('gestionQuantite').value);
+        let aujourdhui = new Date().toISOString().split('T')[0];
 
         const produitFinal = `${cat} - ${parfum} (${parts})`;
         const data = {
@@ -476,7 +477,8 @@
             telephoneClient: "",
             typeBuche: produitFinal,
             quantite: qte,
-            dateRetrait: new Date().toISOString().split('T')[0]
+            dateRetrait: aujourdhui,
+            dateCommande: aujourdhui
         };
 
         fetch(WEB_APP_URL, { 
@@ -585,13 +587,16 @@
             return;
         }
 
+        let aujourdhui = new Date().toISOString().split('T')[0];
+
         const data = {
             magasin: magasinActif,
             nomClient: document.getElementById('nomClient').value,
             telephoneClient: document.getElementById('telephoneClient').value,
             typeBuche: selections.join(" + "),
             quantite: qteTotaleGlobale,
-            dateRetrait: document.getElementById('dateRetrait').value
+            dateRetrait: document.getElementById('dateRetrait').value,
+            dateCommande: aujourdhui
         };
 
         fetch(WEB_APP_URL, { 
@@ -668,8 +673,8 @@
 
             commandesFiltrees.forEach(c => {
                 c.dateRetraitFormatee = formaterDateSeule(c.dateRetrait);
-                // Si la feuille renvoie une date de passation/création, on l'utilise, sinon valeur par défaut
-                c.datePassationFormatee = formaterDateSeule(c.dateCommande || c.dateCreation || c.timestamp || c.dateRetraitFormatee);
+                // Utilise explicitement la colonne G (dateCommande)
+                c.datePassationFormatee = formaterDateSeule(c.dateCommande || c.dateRetrait);
             });
 
             nombreCommandesPrecedent = commandesFiltrees.length;
@@ -809,9 +814,8 @@
                 document.getElementById('commandes-par-retrait-content').innerHTML = htmlParDate;
             }
 
-            // AFFICHAGE DE LA NOUVELLE RUBRIQUE : Arrivages par Date de Passation (Jour le jour)
+            // ARRIVAGES PAR VRAIE DATE DE COMMANDE (COLONNE G)
             if (document.getElementById('labo-commandes-par-passation-screen').style.display === 'block') {
-                // Trier par date de passation du plus récent au plus ancien ou inversement
                 let commandes = commandesFiltrees.sort((a, b) => new Date(b.datePassationFormatee) - new Date(a.datePassationFormatee));
                 let datesPassationUniques = [...new Set(commandes.map(c => c.datePassationFormatee))].filter(Boolean);
                 
