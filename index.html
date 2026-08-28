@@ -51,16 +51,13 @@
         .phone-text { font-size: 13px; color: #555; display: inline-block; margin-left: 10px; }
         .badge-magasin { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #475569; display: inline-block; }
         
-        /* STYLE CARTE COMPACTE SUR L'ECRAN */
         .single-order-card { background: #fff; border: 1px solid #ccc; padding: 10px 15px; border-radius: 6px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .single-order-card .order-details-table { display: none; } /* Caché à l'écran par défaut */
+        .single-order-card .order-details-table { display: none; }
 
-        /* COULEURS MAGASINS POUR LE LABO */
         .card-toulon { border-left: 6px solid #f0ad4e; background: #fcf8e3; }
         .card-carqueiranne { border-left: 6px solid #5cb85c; background: #dff0d8; }
         .card-hyeres { border-left: 6px solid #f06292; background: #fce4ec; }
 
-        /* STYLE IMPRESSION / PDF INDIVIDUEL RESTRUCTURÉ */
         @media print {
             body { background: white; padding: 0; color: black; }
             .container > h1, .back-btn, .print-btn, #home-screen, #magasin-menu-screen, #labo-menu-screen, .form-group, h2, p { display: none !important; }
@@ -81,25 +78,10 @@
                 padding-bottom: 15px;
                 margin-bottom: 25px;
             }
-            .pdf-client-info {
-                text-align: left;
-            }
-            .pdf-client-info h2 {
-                margin: 0 0 5px 0;
-                color: #000;
-                font-size: 22px;
-                border: none;
-                padding: 0;
-            }
-            .pdf-client-info p {
-                margin: 3px 0;
-                font-size: 16px;
-                display: block !important;
-                color: #333;
-            }
-            .pdf-location-info {
-                text-align: right;
-            }
+            .pdf-client-info { text-align: left; }
+            .pdf-client-info h2 { margin: 0 0 5px 0; color: #000; font-size: 22px; border: none; padding: 0; }
+            .pdf-client-info p { margin: 3px 0; font-size: 16px; display: block !important; color: #333; }
+            .pdf-location-info { text-align: right; }
             .pdf-location-info .store-badge {
                 font-size: 20px;
                 font-weight: bold;
@@ -111,12 +93,7 @@
                 margin-bottom: 5px;
                 -webkit-print-color-adjust: exact;
             }
-            .pdf-location-info p {
-                margin: 3px 0;
-                font-size: 14px;
-                display: block !important;
-                color: #555;
-            }
+            .pdf-location-info p { margin: 3px 0; font-size: 14px; display: block !important; color: #555; }
 
             table { page-break-inside: auto; width: 100% !important; margin-top: 10px; }
             th { background: #eee !important; color: black !important; font-size: 15px; -webkit-print-color-adjust: exact; }
@@ -130,7 +107,6 @@
 <div class="container">
     <h1>🎄 Gestion des Bûches de Noël</h1>
 
-    <!-- Écran d'accueil -->
     <div id="home-screen" class="view">
         <h2>Choisissez votre espace</h2>
         <div class="menu-grid">
@@ -142,7 +118,6 @@
         </div>
     </div>
 
-    <!-- Menu Magasin -->
     <div id="magasin-menu-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2 id="titre-choix-magasin">Boutique</h2>
@@ -162,7 +137,6 @@
         </div>
     </div>
 
-    <!-- Menu Labo -->
     <div id="labo-menu-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2>🏭 Espace Laboratoire / Expéditions</h2>
@@ -181,7 +155,7 @@
             </div>
             <div class="action-card labo-action-card" onclick="ouvrirCommandesParDatePassationLabo()">
                 <h3>📥 Arrivage (Date de Commande)</h3>
-                <p>Regroupé par jour de saisie (pour fin de journée)</p>
+                <p>Regroupé par jour de saisie</p>
             </div>
             <div class="action-card labo-action-card" onclick="ouvrirExpeditionsLabo()">
                 <h3>🚚 Expéditions par Magasin</h3>
@@ -190,14 +164,12 @@
         </div>
     </div>
 
-    <!-- Stock Magasin -->
     <div id="magasin-stock-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-stock-magasin">📊 Stock en direct</h2>
         <div id="stock-magasin-content">Chargement instantané...</div>
     </div>
 
-    <!-- Commandes du Jour Magasin -->
     <div id="magasin-commandes-jour-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2>📅 Commandes à retirer par date</h2>
@@ -208,7 +180,6 @@
         <div id="commandes-jour-magasin-content">Chargement...</div>
     </div>
 
-    <!-- Passer Commande -->
     <div id="magasin-order-screen" class="view">
         <button class="back-btn" onclick="choisirMagasin(magasinActif)">⬅ Retour au menu magasin</button>
         <h2 id="titre-commande-magasin">📝 Passer une commande</h2>
@@ -225,7 +196,7 @@
             </div>
 
             <div class="sub-group">
-                <h4>Sélectionnez les quantités souhaitées (Indicateur de stock en direct) :</h4>
+                <h4>Sélectionnez les quantités souhaitées :</h4>
                 <div id="grille-saisie-commande">Chargement des stocks...</div>
             </div>
 
@@ -238,36 +209,30 @@
         </form>
     </div>
 
-    <!-- Stock Labo -->
     <div id="labo-stock-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📊 Stocks détaillés par magasin</h2>
         <div id="stock-global-content">Chargement...</div>
     </div>
 
-    <!-- Commandes Globales Labo -->
     <div id="labo-orders-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📋 Commandes par magasin</h2>
         <div id="recap-par-magasin">Chargement...</div>
     </div>
 
-    <!-- Commandes par Date de Retrait Labo -->
     <div id="labo-commandes-par-retrait-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📅 Commandes Classées par Date de Retrait</h2>
         <div id="commandes-par-retrait-content">Chargement...</div>
     </div>
 
-    <!-- ECRAN : Commandes par Date de Passation (Arrivage / Fin de journée) -->
     <div id="labo-commandes-par-passation-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>📥 Commandes Passées Jour par Jour (Arrivages)</h2>
-        <p style="color: #666; font-size: 14px;">Idéal pour votre père en fin de journée : retrouvez toutes les commandes saisies le jour même, prêtes à être imprimées.</p>
         <div id="commandes-par-passation-content">Chargement...</div>
     </div>
 
-    <!-- Expéditions Labo -->
     <div id="labo-expeditions-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
         <h2>🚚 Expéditions et Préparations Jour par Jour</h2>
@@ -278,7 +243,6 @@
         <div id="expeditions-labo-content">Chargement...</div>
     </div>
 
-    <!-- Gestion / Réassort -->
     <div id="gestion-screen" class="view">
         <button class="back-btn" onclick="retourAccueil()">⬅ Retour à l'accueil</button>
         <h2>⚙️ Réapprovisionnement des Stocks</h2>
@@ -673,7 +637,6 @@
 
             commandesFiltrees.forEach(c => {
                 c.dateRetraitFormatee = formaterDateSeule(c.dateRetrait);
-                // Utilise explicitement la colonne G (dateCommande)
                 c.datePassationFormatee = formaterDateSeule(c.dateCommande || c.dateRetrait);
             });
 
@@ -814,7 +777,6 @@
                 document.getElementById('commandes-par-retrait-content').innerHTML = htmlParDate;
             }
 
-            // ARRIVAGES PAR VRAIE DATE DE COMMANDE (COLONNE G)
             if (document.getElementById('labo-commandes-par-passation-screen').style.display === 'block') {
                 let commandes = commandesFiltrees.sort((a, b) => new Date(b.datePassationFormatee) - new Date(a.datePassationFormatee));
                 let datesPassationUniques = [...new Set(commandes.map(c => c.datePassationFormatee))].filter(Boolean);
