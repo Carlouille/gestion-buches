@@ -53,14 +53,14 @@
         
         /* STYLE CARTE COMPACTE SUR L'ECRAN */
         .single-order-card { background: #fff; border: 1px solid #ccc; padding: 10px 15px; border-radius: 6px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .single-order-card .order-details-table { display: none; } /* Caché à l'écran par défaut pour gagner de la place */
+        .single-order-card .order-details-table { display: none; } /* Caché à l'écran par défaut */
 
         /* COULEURS MAGASINS POUR LE LABO */
         .card-toulon { border-left: 6px solid #f0ad4e; background: #fcf8e3; }
         .card-carqueiranne { border-left: 6px solid #5cb85c; background: #dff0d8; }
         .card-hyeres { border-left: 6px solid #f06292; background: #fce4ec; }
 
-        /* STYLE IMPRESSION / PDF INDIVIDUEL (Le détail s'active ici) */
+        /* STYLE IMPRESSION / PDF INDIVIDUEL RESTRUCTURÉ */
         @media print {
             body { background: white; padding: 0; color: black; }
             .container > h1, .back-btn, .print-btn, #home-screen, #magasin-menu-screen, #labo-menu-screen, .form-group, h2, p { display: none !important; }
@@ -69,12 +69,60 @@
             .view[style*="display: block"] { display: block !important; }
             
             .single-order-card { display: none !important; border: none; padding: 0; margin: 0; box-shadow: none; background: white !important; }
-            .single-order-card.printing-active { display: block !important; border: 2px solid #333 !important; padding: 25px !important; border-radius: 8px !important; }
-            .single-order-card.printing-active .order-details-table { display: block !important; margin-top: 15px; }
+            .single-order-card.printing-active { display: block !important; border: 2px solid #333 !important; padding: 30px !important; border-radius: 8px !important; }
             
-            table { page-break-inside: auto; width: 100% !important; }
+            /* Mise en page structurée du PDF */
+            .single-order-card.printing-active .order-details-table { display: block !important; }
+            
+            .pdf-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-bottom: 2px solid #333;
+                padding-bottom: 15px;
+                margin-bottom: 25px;
+            }
+            .pdf-client-info {
+                text-align: left;
+            }
+            .pdf-client-info h2 {
+                margin: 0 0 5px 0;
+                color: #000;
+                font-size: 22px;
+                border: none;
+                padding: 0;
+            }
+            .pdf-client-info p {
+                margin: 3px 0;
+                font-size: 16px;
+                display: block !important;
+                color: #333;
+            }
+            .pdf-location-info {
+                text-align: right;
+            }
+            .pdf-location-info .store-badge {
+                font-size: 20px;
+                font-weight: bold;
+                background: #333;
+                color: white;
+                padding: 6px 14px;
+                border-radius: 6px;
+                display: inline-block;
+                margin-bottom: 5px;
+                -webkit-print-color-adjust: exact;
+            }
+            .pdf-location-info p {
+                margin: 3px 0;
+                font-size: 14px;
+                display: block !important;
+                color: #555;
+            }
+
+            table { page-break-inside: auto; width: 100% !important; margin-top: 10px; }
+            th { background: #eee !important; color: black !important; font-size: 15px; -webkit-print-color-adjust: exact; }
+            td { font-size: 15px; padding: 10px !important; }
             tr { page-break-inside: avoid; page-break-after: auto; }
-            th { background: #eee !important; color: black !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -440,7 +488,6 @@
         .catch(error => console.error("Erreur chargement stock formulaire:", error));
     }
     
-    // Alias pour la fonction
     function chargerDonneesPourFormulaireCommande() {
         chargerDonneesForFormulaireCommande();
     }
@@ -631,14 +678,30 @@
                 
                 html += `<button class="print-btn" onclick="imprimerSeuleCommande('${uniqueId}')">🖨️ PDF</button>`;
                 
-                // PARTIE CACHEE SUR L'ECRAN QUI APPARAIT UNIQUEMENT DANS LE PDF IMPRIME
+                // PARTIE CACHEE SUR L'ECRAN -> RESTURÉE POUR LE PDF IMPRIMÉ
                 html += `<div class="order-details-table">`;
-                html += `<h3>Bon de commande - ${row.magasin}</h3>`;
-                html += `<p><b>Client :</b> ${row.nomClient}</p>`;
-                if (row.telephoneClient) html += `<p><b>Téléphone :</b> ${row.telephoneClient}</p>`;
-                if (row.dateRetraitFormatee) html += `<p><b>Date de retrait :</b> ${row.dateRetraitFormatee}</p>`;
                 
-                html += `<table><tr><th>Produit commandé</th><th>Quantité</th></tr>`;
+                // En-tête du PDF : Gauche (Client) et Droite (Lieu / Date)
+                html += `<div class="pdf-header">`;
+                html += `<div class="pdf-client-info">`;
+                html += `<h2>${row.nomClient}</h2>`;
+                if (row.telephoneClient) {
+                    html += `<p>📞 <b>Tél :</b> ${row.telephoneClient}</p>`;
+                }
+                html += `</div>`;
+                
+                html += `<div class="pdf-location-info">`;
+                html += `<span class="store-badge">📍 ${row.magasin}</span>`;
+                if (row.dateRetraitFormatee) {
+                    let partsD = row.dateRetraitFormatee.split('-');
+                    let dateFr = partsD.length === 3 ? `${partsD[2]}/${partsD[1]}/${partsD[0]}` : row.dateRetraitFormatee;
+                    html += `<p>Retrait le : <b>${dateFr}</b></p>`;
+                }
+                html += `</div>`;
+                html += `</div>`; // Fin de pdf-header
+
+                // Tableau des produits en bas
+                html += `<table><tr><th>Produit commandé</th><th style="width: 120px; text-align: center;">Quantité</th></tr>`;
 
                 let elements = row.typeBuche.split("+");
                 elements.forEach(el => {
@@ -647,7 +710,7 @@
                     let qteProd = match ? match[1] : "";
                     let nomProd = match ? match[2] : el;
 
-                    html += `<tr><td>${nomProd}</td><td><b>${qteProd}</b></td></tr>`;
+                    html += `<tr><td>${nomProd}</td><td style="text-align: center;"><b>${qteProd}</b></td></tr>`;
                 });
 
                 html += `</table></div>`;
