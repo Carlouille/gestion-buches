@@ -71,7 +71,6 @@
             .single-order-card { display: none !important; border: none; padding: 0; margin: 0; box-shadow: none; background: white !important; }
             .single-order-card.printing-active { display: block !important; border: 2px solid #333 !important; padding: 30px !important; border-radius: 8px !important; }
             
-            /* Mise en page structurée du PDF */
             .single-order-card.printing-active .order-details-table { display: block !important; }
             
             .pdf-header {
@@ -176,9 +175,13 @@
                 <h3>📋 Commandes Globales</h3>
                 <p>Toutes les commandes par boutique</p>
             </div>
-            <div class="action-card labo-action-card" onclick="ouvrirCommandesParDateLabo()">
-                <h3>📅 Commandes Jour par Jour</h3>
-                <p>Classement par date avec PDF par client</p>
+            <div class="action-card labo-action-card" onclick="ouvrirCommandesParDateRetraitLabo()">
+                <h3>📅 Retraits Jour par Jour</h3>
+                <p>Classement par date de retrait</p>
+            </div>
+            <div class="action-card labo-action-card" onclick="ouvrirCommandesParDatePassationLabo()">
+                <h3>📥 Arrivage (Date de Commande)</h3>
+                <p>Regroupé par jour de saisie (pour fin de journée)</p>
             </div>
             <div class="action-card labo-action-card" onclick="ouvrirExpeditionsLabo()">
                 <h3>🚚 Expéditions par Magasin</h3>
@@ -249,12 +252,19 @@
         <div id="recap-par-magasin">Chargement...</div>
     </div>
 
-    <!-- Commandes Jour par Jour Labo -->
-    <div id="labo-commandes-par-date-screen" class="view">
+    <!-- Commandes par Date de Retrait Labo -->
+    <div id="labo-commandes-par-retrait-screen" class="view">
         <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
-        <h2>📅 Commandes Classées Jour par Jour (PDF par client)</h2>
-        <p style="color: #666; font-size: 14px;">Affichage compact. Cliquez sur le bouton pour imprimer le bon individuel.</p>
-        <div id="commandes-par-date-content">Chargement...</div>
+        <h2>📅 Commandes Classées par Date de Retrait</h2>
+        <div id="commandes-par-retrait-content">Chargement...</div>
+    </div>
+
+    <!-- NOUVEL ECRAN : Commandes par Date de Passation (Arrivage / Fin de journée) -->
+    <div id="labo-commandes-par-passation-screen" class="view">
+        <button class="back-btn" onclick="choisirLaboMenu()">⬅ Retour au menu labo</button>
+        <h2>📥 Commandes Passées Jour par Jour (Arrivages)</h2>
+        <p style="color: #666; font-size: 14px;">Idéal pour votre père en fin de journée : retrouvez toutes les commandes saisies le 12, puis le 13, etc., prêtes à être imprimées.</p>
+        <div id="commandes-par-passation-content">Chargement...</div>
     </div>
 
     <!-- Expéditions Labo -->
@@ -392,9 +402,15 @@
         chargerDonnees();
     }
 
-    function ouvrirCommandesParDateLabo() {
+    function ouvrirCommandesParDateRetraitLabo() {
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
-        document.getElementById('labo-commandes-par-date-screen').style.display = 'block';
+        document.getElementById('labo-commandes-par-retrait-screen').style.display = 'block';
+        chargerDonnees();
+    }
+
+    function ouvrirCommandesParDatePassationLabo() {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('labo-commandes-par-passation-screen').style.display = 'block';
         chargerDonnees();
     }
 
@@ -622,6 +638,28 @@
         return html;
     }
 
+    function formaterDateSeule(dStr) {
+        if (!dStr) return "";
+        let str = String(dStr).trim();
+        if (str.includes('GMT') || str.includes('UTC') || str.length > 10) {
+            let dObj = new Date(str);
+            if (!isNaN(dObj.getTime())) {
+                let annee = dObj.getFullYear();
+                let mois = String(dObj.getMonth() + 1).padStart(2, '0');
+                let jour = String(dObj.getDate()).padStart(2, '0');
+                return `${annee}-${mois}-${jour}`;
+            } else {
+                return str.substring(0, 10);
+            }
+        } else if (str.includes('/')) {
+            let parties = str.split('/');
+            if (parties.length === 3 && parties[2].length === 4) {
+                return `${parties[2]}-${parties[1].padStart(2, '0')}-${parties[0].padStart(2, '0')}`;
+            }
+        }
+        return str.substring(0, 10);
+    }
+
     function chargerDonnees() {
         fetch(WEB_APP_URL, { mode: 'cors', redirect: 'follow' })
         .then(res => res.json())
@@ -629,31 +667,9 @@
             let commandesFiltrees = (res.commandes || []).filter(c => c.nomClient !== "[RÉAPPROVISIONNEMENT]");
 
             commandesFiltrees.forEach(c => {
-                if (c.dateRetrait) {
-                    let dStr = String(c.dateRetrait).trim();
-                    if (dStr.includes('GMT') || dStr.includes('UTC') || dStr.length > 10) {
-                        let dObj = new Date(dStr);
-                        if (!isNaN(dObj.getTime())) {
-                            let annee = dObj.getFullYear();
-                            let mois = String(dObj.getMonth() + 1).padStart(2, '0');
-                            let jour = String(dObj.getDate()).padStart(2, '0');
-                            c.dateRetraitFormatee = `${annee}-${mois}-${jour}`;
-                        } else {
-                            c.dateRetraitFormatee = dStr.substring(0, 10);
-                        }
-                    } else if (dStr.includes('/')) {
-                        let parties = dStr.split('/');
-                        if (parties.length === 3 && parties[2].length === 4) {
-                            c.dateRetraitFormatee = `${parties[2]}-${parties[1].padStart(2, '0')}-${parties[0].padStart(2, '0')}`;
-                        } else {
-                            c.dateRetraitFormatee = dStr;
-                        }
-                    } else {
-                        c.dateRetraitFormatee = dStr.substring(0, 10);
-                    }
-                } else {
-                    c.dateRetraitFormatee = "";
-                }
+                c.dateRetraitFormatee = formaterDateSeule(c.dateRetrait);
+                // Si la feuille renvoie une date de passation/création, on l'utilise, sinon valeur par défaut
+                c.datePassationFormatee = formaterDateSeule(c.dateCommande || c.dateCreation || c.timestamp || c.dateRetraitFormatee);
             });
 
             nombreCommandesPrecedent = commandesFiltrees.length;
@@ -667,7 +683,6 @@
 
                 let html = `<div class="single-order-card ${couleurClass}" id="${uniqueId}">`;
                 
-                // PARTIE VISIBLE SUR L'ECRAN (Compacte)
                 html += `<div>`;
                 html += `<span class="badge-magasin">${row.magasin}</span> `;
                 html += `<b>${row.nomClient}</b>`;
@@ -678,10 +693,8 @@
                 
                 html += `<button class="print-btn" onclick="imprimerSeuleCommande('${uniqueId}')">🖨️ PDF</button>`;
                 
-                // PARTIE CACHEE SUR L'ECRAN -> RESTURÉE POUR LE PDF IMPRIMÉ
                 html += `<div class="order-details-table">`;
                 
-                // En-tête du PDF : Gauche (Client) et Droite (Lieu / Date)
                 html += `<div class="pdf-header">`;
                 html += `<div class="pdf-client-info">`;
                 html += `<h2>${row.nomClient}</h2>`;
@@ -698,9 +711,8 @@
                     html += `<p>Retrait le : <b>${dateFr}</b></p>`;
                 }
                 html += `</div>`;
-                html += `</div>`; // Fin de pdf-header
+                html += `</div>`;
 
-                // Tableau des produits en bas
                 html += `<table><tr><th>Produit commandé</th><th style="width: 120px; text-align: center;">Quantité</th></tr>`;
 
                 let elements = row.typeBuche.split("+");
@@ -774,7 +786,7 @@
                 if (recapDiv) recapDiv.innerHTML = htmlCommandes;
             }
 
-            if (document.getElementById('labo-commandes-par-date-screen').style.display === 'block') {
+            if (document.getElementById('labo-commandes-par-retrait-screen').style.display === 'block') {
                 let commandes = commandesFiltrees.sort((a, b) => new Date(a.dateRetraitFormatee) - new Date(b.dateRetraitFormatee));
                 let datesUniques = [...new Set(commandes.map(c => c.dateRetraitFormatee))].filter(Boolean);
                 
@@ -790,11 +802,36 @@
                         htmlParDate += `<h3>📅 Retraits du : ${dateLisible} (${cmdsDuJour.length} commandes)</h3>`;
                         
                         cmdsDuJour.forEach((row, cIdx) => {
-                            htmlParDate += creerLigneCommandeCompacte(row, `labo-date-${dIdx}-${cIdx}`);
+                            htmlParDate += creerLigneCommandeCompacte(row, `labo-retrait-${dIdx}-${cIdx}`);
                         });
                     });
                 }
-                document.getElementById('commandes-par-date-content').innerHTML = htmlParDate;
+                document.getElementById('commandes-par-retrait-content').innerHTML = htmlParDate;
+            }
+
+            // AFFICHAGE DE LA NOUVELLE RUBRIQUE : Arrivages par Date de Passation (Jour le jour)
+            if (document.getElementById('labo-commandes-par-passation-screen').style.display === 'block') {
+                // Trier par date de passation du plus récent au plus ancien ou inversement
+                let commandes = commandesFiltrees.sort((a, b) => new Date(b.datePassationFormatee) - new Date(a.datePassationFormatee));
+                let datesPassationUniques = [...new Set(commandes.map(c => c.datePassationFormatee))].filter(Boolean);
+                
+                let htmlPassation = "";
+                if (datesPassationUniques.length === 0) {
+                    htmlPassation = "<p>Aucune commande enregistrée pour le moment.</p>";
+                } else {
+                    datesPassationUniques.forEach((dateVal, dIdx) => {
+                        let dParts = dateVal.split('-');
+                        let dateLisible = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}/${dParts[0]}` : dateVal;
+                        let cmdsDuJour = commandes.filter(c => c.datePassationFormatee === dateVal);
+                        
+                        htmlPassation += `<h3>📥 Commandes passées le : ${dateLisible} (${cmdsDuJour.length} commandes)</h3>`;
+                        
+                        cmdsDuJour.forEach((row, cIdx) => {
+                            htmlPassation += creerLigneCommandeCompacte(row, `labo-pass-${dIdx}-${cIdx}`);
+                        });
+                    });
+                }
+                document.getElementById('commandes-par-passation-content').innerHTML = htmlPassation;
             }
 
             if (document.getElementById('labo-expeditions-screen').style.display === 'block') {
